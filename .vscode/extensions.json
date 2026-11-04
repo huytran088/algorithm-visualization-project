@@ -1,0 +1,8 @@
+{
+	"recommendations": [
+		"swellaby.node-pack",
+		"austenc.tailwind-docs",
+		"bradlc.vscode-tailwindcss",
+		"AKROSS.attributes-collapse"
+	]
+}

@@ -1,0 +1,23 @@
+{
+  "editor.rulers": [
+    80
+  ],
+  "[javascript]": {
+    "editor.defaultFormatter": null
+  },
+  "eslint.codeActionsOnSave.rules": null,
+  "eslint.runtime": "",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "antlr4.generation": {
+    "language": "TypeScript",
+    "outputDir": ".antlr",
+    "mode": "external",
+    "listeners": true,
+    "visitors": true
+  }
+}
