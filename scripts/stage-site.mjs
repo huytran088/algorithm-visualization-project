@@ -21,7 +21,7 @@ const root = resolve(import.meta.dirname, '..');
 const client = join(root, 'build', 'client');
 const site = join(root, 'build', 'site');
 
-const raw = process.env.VITE_BASE_PATH || '/algorithm-visualization-project/';
+const raw = process.env.VITE_BASE_PATH || '/avp/';
 const base = raw.replace(/^\/+|\/+$/g, '');
 
 if (!existsSync(client)) {

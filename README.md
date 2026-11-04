@@ -2,7 +2,7 @@
 
 [![CI/CD](https://github.com/huytran088/algorithm-visualization-project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/huytran088/algorithm-visualization-project/actions/workflows/ci-cd.yml)
 
-**Live demo:** https://huytran088.github.io/algorithm-visualization-project/
+**Live demo:** https://huytran088.github.io/avp/
 
 The Algorithms Visualization Project is a web-based educational tool that helps users understand the logic and behavior of classic algorithms through step-by-step visualizations, pseudocode synchronization, and a “Test Yourself” interactive mode. The platform is designed to promote active learning, reinforce key algorithmic concepts, and allow for user interaction at each stage.
 
@@ -46,14 +46,14 @@ Copy `.env.example` to `.env` to override defaults:
 | Variable | Purpose |
 | --- | --- |
 | `VITE_AI_API_URL` | Endpoint used by the AI pane (`POST {message}` → `{generated_code}`) |
-| `VITE_BASE_PATH` | Base path the app is served from. Default `/algorithm-visualization-project/` (GitHub Pages); Docker uses `/` |
+| `VITE_BASE_PATH` | Base path the app is served from. Default `/avp/` (GitHub Pages); Docker uses `/` |
 
 ### Development
 Start the live development server:
 ```bash
 npm run dev
 ```
-Your application will be available at `http://localhost:5173/algorithm-visualization-project/`.
+Your application will be available at `http://localhost:5173/avp/`.
 
 ### Testing
 Check types and fix code errors using eslint and tsc:
@@ -96,11 +96,16 @@ VITE_BASE_PATH=/my/path/ npm run build:site   # serve build/site at /my/path/
 | --- | --- | --- |
 | `checks` | always | `npm ci`, `build-g4`, lint, typecheck, node tests |
 | `browser-tests` | always | Vitest browser tests on Chromium, Firefox and WebKit |
-| `build-site` | after `checks` | `build:site` with the Pages base path, uploaded as a Pages artifact |
-| `deploy-pages` | `main` only, after all tests | Publishes to https://huytran088.github.io/algorithm-visualization-project/ |
+| `build-site` | after `checks` | `build:site` with base path `/avp/`, uploaded as an artifact |
+| `deploy-site` | `main` only, after all tests | Commits the build into `avp/` of [`huytran088.github.io`](https://github.com/huytran088/huytran088.github.io), served at https://huytran088.github.io/avp/ |
 | `docker` | after `checks` | Builds the image (amd64 + arm64); pushes to GHCR on `main` and `v*` tags |
 
-Pages must be configured with **Settings → Pages → Source: GitHub Actions**.
+The site is published through the GitHub Pages **user site** rather than this
+repo's own project Pages, so the URL is `/avp/` while the repo keeps its name.
+`deploy-site` pushes with an SSH deploy key that has write access to
+`huytran088.github.io` only. The private key is stored in this repo as the
+`USER_SITE_DEPLOY_KEY` Actions secret. To change the target, edit `SITE_REPO` /
+`SITE_DIR` at the top of the workflow.
 
 #### Docker
 The multi-stage `Dockerfile` builds the site with Node and serves it with nginx.

@@ -179,7 +179,7 @@ it.
 
 The app is served under `Globals.RouteBaseName`. It is resolved from the
 `VITE_BASE_PATH` env variable at build time and defaults to
-`/algorithm-visualization-project/` (GitHub Pages). Vite `base`, React Router
+`/avp/` (GitHub Pages, https://huytran088.github.io/avp/). Vite `base`, React Router
 `basename`, prerendered paths and every asset/link URL derive from it.
 
 ### Deployment
@@ -190,7 +190,7 @@ flowchart LR
   Push --> BT["browser-tests<br/>chromium · firefox · webkit"]
   Checks --> Site["build-site<br/>npm run build:site"]
   Checks --> Docker["docker<br/>buildx amd64+arm64"]
-  Site --> Pages["deploy-pages (main)<br/>GitHub Pages"]
+  Site --> Pages["deploy-site (main)<br/>push to huytran088.github.io/avp/"]
   BT --> Pages
   Docker --> GHCR[("ghcr.io/huytran088/<br/>algorithm-visualization-project")]
 ```

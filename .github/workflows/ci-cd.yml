@@ -10,6 +10,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # GitHub Pages user-site repository and the folder the app is published to.
+  SITE_REPO: huytran088/huytran088.github.io
+  SITE_DIR: avp
+
 concurrency:
   group: ci-cd-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -72,7 +77,7 @@ jobs:
           if-no-files-found: ignore
 
   # -------------------------------------------------------------------------
-  # Build the static site for GitHub Pages
+  # Build the static site, served at https://huytran088.github.io/avp/
   # -------------------------------------------------------------------------
   build-site:
     name: Build site
@@ -86,10 +91,6 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - name: Configure Pages
-        id: pages
-        uses: actions/configure-pages@v6.0.0
-
       - run: npm ci
       - name: Generate ANTLR parser
         run: npm run build-g4
@@ -97,33 +98,63 @@ jobs:
       - name: Build and stage site
         run: npm run build:site
         env:
-          # e.g. "/algorithm-visualization-project/", derived from the Pages URL.
-          VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+          VITE_BASE_PATH: /${{ env.SITE_DIR }}/
 
-      - uses: actions/upload-pages-artifact@v5.0.0
+      - uses: actions/upload-artifact@v7.0.2
         with:
+          name: site
           path: build/site
+          if-no-files-found: error
 
   # -------------------------------------------------------------------------
-  # Deploy to GitHub Pages (main only, after every test has passed)
+  # Publish into the avp/ folder of the GitHub Pages user site
+  # (huytran088/huytran088.github.io), main only, after every test passed.
+  # Authenticates with a write deploy key scoped to that single repository,
+  # stored here as the USER_SITE_DEPLOY_KEY secret.
   # -------------------------------------------------------------------------
-  deploy-pages:
-    name: Deploy to GitHub Pages
+  deploy-site:
+    name: Deploy to huytran088.github.io/avp
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: [build-site, browser-tests]
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      name: user-site
+      url: https://huytran088.github.io/avp/
     concurrency:
-      group: pages
+      group: user-site-deploy
       cancel-in-progress: false
     steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5.0.1
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: site
+          path: site
+
+      - name: Check out user site
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: ${{ env.SITE_REPO }}
+          ref: main
+          ssh-key: ${{ secrets.USER_SITE_DEPLOY_KEY }}
+          path: user-site
+
+      - name: Replace ${{ env.SITE_DIR }}/ with the new build
+        run: |
+          rm -rf "user-site/${SITE_DIR}"
+          mkdir -p "user-site/${SITE_DIR}"
+          cp -a site/. "user-site/${SITE_DIR}/"
+
+      - name: Commit and push
+        working-directory: user-site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A "${SITE_DIR}"
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."
+            exit 0
+          fi
+          git commit -m "Deploy ${SITE_DIR} from ${GITHUB_REPOSITORY}@${GITHUB_SHA::7}"
+          git push origin main
 
   # -------------------------------------------------------------------------
   # Docker image -> GitHub Container Registry

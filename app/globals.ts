@@ -25,13 +25,13 @@ import {
  *           The public URL of the project source code.
  * @property {string} RouteBaseName
  *           The base path the app is served from. Defaults to
- *           "/algorithm-visualization-project/" (GitHub Pages); override at
+ *           "/avp/" (GitHub Pages user site); override at
  *           build time with the VITE_BASE_PATH env variable.
  * @property {string} AIApiURL
  *           The endpoint used by the AI pane to generate pseudocode.
  *           Override at build time with the VITE_AI_API_URL env variable.
  */
-const DefaultRouteBaseName = '/algorithm-visualization-project/';
+const DefaultRouteBaseName = '/avp/';
 
 /**
  * Resolves the base path the app is served from (e.g. "/" or "/avp/").
@@ -54,7 +54,7 @@ const Globals = {
   AppVersion: 'v0.0.1a',
   AppLicense: 'GPLv3',
 
-  AppURL: 'https://huytran088.github.io/algorithm-visualization-project/',
+  AppURL: 'https://huytran088.github.io/avp/',
   AppIssuesURL: 'https://github.com/huytran088/algorithm-visualization-project/issues',
   AppSourceURL: 'https://github.com/huytran088/algorithm-visualization-project',
   RouteBaseName: RouteBaseName,
