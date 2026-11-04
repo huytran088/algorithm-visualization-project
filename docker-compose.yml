@@ -1,0 +1,12 @@
+services:
+  avp:
+    build:
+      context: .
+      args:
+        # Change to e.g. /avp/ to serve under a sub-path.
+        VITE_BASE_PATH: /
+        # VITE_AI_API_URL: https://example.com/api/generate
+    image: algorithm-visualization-project:local
+    ports:
+      - "8080:80"
+    restart: unless-stopped

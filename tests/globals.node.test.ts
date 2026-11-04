@@ -32,4 +32,9 @@ describe('Test globals', async () => {
     await expect(Globals.AppSourceURL).toBeTypeOf('string');
     await expect(Globals.AppSourceURL).toMatch(/^https?:\/\/.*/);
   });
+
+  test('Ensure RouteBaseName starts and ends with a slash', async () => {
+    await expect(Globals.RouteBaseName).toMatch(/^\/(.*\/)?$/);
+    await expect(Globals.RouteBaseName).not.toMatch(/\/\//);
+  });
 });

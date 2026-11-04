@@ -1,0 +1,48 @@
+# Rendered by the official nginx image entrypoint (envsubst) at container start.
+# ${BASE_PATH} is "/" or "/some/path/".
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Keep the client-facing host:port when redirecting /run -> /run/.
+    absolute_redirect off;
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+    gzip_min_length 1024;
+
+    # Hashed build assets never change: cache aggressively.
+    location ^~ ${BASE_PATH}assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # Algorithm source files are plain text.
+    location ~ \.avp$ {
+        default_type text/plain;
+        add_header Cache-Control "no-cache";
+        try_files $uri =404;
+    }
+
+    location ${BASE_PATH} {
+        add_header Cache-Control "no-cache";
+        # Prerendered pages live at <route>/index.html; unknown routes fall back
+        # to the SPA shell so the client router can take over.
+        try_files $uri $uri/ $uri/index.html ${BASE_PATH}__spa-fallback.html;
+    }
+
+    # When served under a sub-path, redirect "/" to it (empty when BASE_PATH="/").
+    ${ROOT_REDIRECT}
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+}

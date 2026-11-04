@@ -115,6 +115,9 @@ public/
 tests/                      # Mirrors app/; *.node.test.ts run in Node,
                             # *.render.test.tsx run in real browsers (Playwright)
 docs/                       # This documentation
+scripts/stage-site.mjs      # Merges the build into a servable build/site/
+Dockerfile, docker/         # nginx image + config template
+.github/workflows/ci-cd.yml # CI (tests) + CD (Pages, GHCR)
 ```
 
 ## Key concepts
@@ -174,10 +177,29 @@ it.
 
 ### Base path
 
-The app is served under `Globals.RouteBaseName` (`/MiamiOH-AVP-Demo/`). Vite
-`base`, React Router `basename`, prerendered paths and every asset/link URL
-derive from that single constant. Change it in `app/globals.ts` when deploying
-somewhere else.
+The app is served under `Globals.RouteBaseName`. It is resolved from the
+`VITE_BASE_PATH` env variable at build time and defaults to
+`/algorithm-visualization-project/` (GitHub Pages). Vite `base`, React Router
+`basename`, prerendered paths and every asset/link URL derive from it.
+
+### Deployment
+
+```mermaid
+flowchart LR
+  Push["git push / PR"] --> Checks["checks<br/>lint · typecheck · node tests"]
+  Push --> BT["browser-tests<br/>chromium · firefox · webkit"]
+  Checks --> Site["build-site<br/>npm run build:site"]
+  Checks --> Docker["docker<br/>buildx amd64+arm64"]
+  Site --> Pages["deploy-pages (main)<br/>GitHub Pages"]
+  BT --> Pages
+  Docker --> GHCR[("ghcr.io/huytran088/<br/>algorithm-visualization-project")]
+```
+
+`scripts/stage-site.mjs` turns the React Router output into one servable tree
+(`build/site/`). The Docker image builds that tree in a Node stage and copies it
+into `nginx:alpine`, under the configured base path. The nginx config
+(`docker/nginx.conf.template`) resolves prerendered routes (`/run/` →
+`run/index.html`) and falls back to the SPA shell for unknown paths.
 
 ## Build & test toolchain
 

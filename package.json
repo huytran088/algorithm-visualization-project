@@ -14,6 +14,7 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
+    "build:site": "react-router build && node scripts/stage-site.mjs",
     "clean": "rimraf build screenshots .vitest-attachments",
     "dev": "react-router dev",
     "dev-host": "react-router dev --host",

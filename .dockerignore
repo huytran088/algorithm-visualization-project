@@ -1,0 +1,17 @@
+node_modules
+build
+.react-router
+app/hooks/interpreter/.antlr
+screenshots
+.vitest-attachments
+.git
+.github
+.gitlab
+.vscode
+.env
+.env.*
+!.env.example
+Attachments
+Dockerfile
+docker-compose.yml
+*.log

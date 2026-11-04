@@ -40,8 +40,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" />
 
-        <link rel="icon" href="favicon.ico" type="image/x-icon" />
-        <link rel="manifest" href="manifest.json" />
+        <link rel="icon" href={`${Globals.RouteBaseName}favicon.ico`} type="image/x-icon" />
+        <link rel="manifest" href={`${Globals.RouteBaseName}manifest.json`} />
 
         <Links />
         <Meta />

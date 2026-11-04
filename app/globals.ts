@@ -23,17 +23,38 @@ import {
  *           The public URL of the project issues page.
  * @property {string} AppSourceURL
  *           The public URL of the project source code.
+ * @property {string} RouteBaseName
+ *           The base path the app is served from. Defaults to
+ *           "/algorithm-visualization-project/" (GitHub Pages); override at
+ *           build time with the VITE_BASE_PATH env variable.
  * @property {string} AIApiURL
  *           The endpoint used by the AI pane to generate pseudocode.
  *           Override at build time with the VITE_AI_API_URL env variable.
  */
-const RouteBaseName = '/MiamiOH-AVP-Demo/';
+const DefaultRouteBaseName = '/algorithm-visualization-project/';
+
+/**
+ * Resolves the base path the app is served from (e.g. "/" or "/avp/").
+ *
+ * Set VITE_BASE_PATH at build time to override the default. This module is
+ * loaded both by the Vite/React Router configs (Node, `process.env`) and by the
+ * client bundle (`import.meta.env`), so both are checked.
+ */
+function resolveRouteBaseName(): string {
+  const fromEnv =
+    import.meta.env?.VITE_BASE_PATH ??
+      (typeof process !== 'undefined' ? process.env?.VITE_BASE_PATH : undefined);
+  const raw = (fromEnv as string | undefined) || DefaultRouteBaseName;
+  return `/${raw.replace(/^\/+|\/+$/g, '')}/`.replace(/\/+/g, '/');
+}
+
+const RouteBaseName = resolveRouteBaseName();
 const Globals = {
   AppName: 'Algorithm Visualization Project',
   AppVersion: 'v0.0.1a',
   AppLicense: 'GPLv3',
 
-  AppURL: 'http://localhost:5173',
+  AppURL: 'https://huytran088.github.io/algorithm-visualization-project/',
   AppIssuesURL: 'https://github.com/huytran088/algorithm-visualization-project/issues',
   AppSourceURL: 'https://github.com/huytran088/algorithm-visualization-project',
   RouteBaseName: RouteBaseName,
