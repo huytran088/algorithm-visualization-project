@@ -34,8 +34,8 @@ const Globals = {
   AppLicense: 'GPLv3',
 
   AppURL: 'http://localhost:5173',
-  AppIssuesURL: 'https://gitlab.csi.miamioh.edu/2026-senior-design-projects/algorithm-visualization-project/algorithm-visualization-project/-/issues',
-  AppSourceURL: 'https://gitlab.csi.miamioh.edu/2026-senior-design-projects/algorithm-visualization-project/algorithm-visualization-project',
+  AppIssuesURL: 'https://github.com/huytran088/algorithm-visualization-project/issues',
+  AppSourceURL: 'https://github.com/huytran088/algorithm-visualization-project',
   RouteBaseName: RouteBaseName,
 
   AIApiURL: (import.meta.env?.VITE_AI_API_URL as string | undefined) ??

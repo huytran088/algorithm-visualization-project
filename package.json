@@ -2,9 +2,13 @@
   "name": "algorithm-visualization-project",
   "version": "1.0.0",
   "description": "An educational tool that helps users understand the logic and behavior of classic algorithms through step-by-step visualizations, pseudocode synchronization, and a \"Test Yourself\" interactive mode. The platform is designed to promote active learning, reinforce key algorithmic concepts, and allow for user interaction at each stage.",
+  "homepage": "https://github.com/huytran088/algorithm-visualization-project#readme",
+  "bugs": {
+    "url": "https://github.com/huytran088/algorithm-visualization-project/issues"
+  },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.csi.miamioh.edu/2026-senior-design-projects/algorithm-visualization-project/algorithm-visualization-project.git"
+    "url": "git+https://github.com/huytran088/algorithm-visualization-project.git"
   },
   "private": true,
   "type": "module",
