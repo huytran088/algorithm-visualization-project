@@ -66,3 +66,11 @@ With a non-root base path, `npm run build` nests HTML under `build/client/<base>
 - UI preferences persist in `localStorage`; the full key list is in `docs/ARCHITECTURE.md`.
 - ESLint enforces style: semicolons, 2-space indent, 1tbs braces, trailing operators on line breaks, and an 80-column warning. `_` marks intentionally unused variables.
 - Known stubs and gaps (`/wiki`, `/interp`, disabled menu items, `vis_sort`) are listed under "Known gaps" in `docs/ARCHITECTURE.md`.
+
+## Git and github
+
+- Base branch: main. Branch names: feat/<issue>-<slug>, fix/<issue>-<slug>, docs/<slug>.
+- Commits: Conventional Commits (feat:, fix:, test:, docs:, refactor:), one logical change each, tests passing.
+- Never push, force-push, open, merge, or close PRs; I do those. Never rewrite history on main.
+- Use `gh` for reading issues, PRs, checks and review comments.
+- Wiki repo: ../<repo>.wiki (link pages with [[Page Name]], keep \_Sidebar.md as the table of contents, commit but never push)
