@@ -25,6 +25,8 @@ export default defineConfig({
         },
       },
       {
+        // Inherit the Tailwind plugin so render tests can load app.css
+        extends: true,
         test: {
           name: 'browser',
           include: [

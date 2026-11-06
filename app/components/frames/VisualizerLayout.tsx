@@ -171,10 +171,10 @@ export default function VisualizerLayout(
           </IconButton>
           <IconButton
             variant="ghost"
-            aria-label="Go to AI Pane"
+            aria-label="Go to AI Tutor"
             aria-haspopup="true"
             aria-expanded={(pane === 3) ? 'true' : 'false'}
-            title="AI Pane"
+            title="AI Tutor"
             onClick={() => setPane(3)}
             className={`cursor-pointer w-20 rounded-full ${(pane === 3) && 'bg-primary/10'}`}
           >
@@ -263,7 +263,7 @@ export default function VisualizerLayout(
                   maxSize={maxPaneHeight}
                 />
                 <PaneHeader
-                  title="AlgoAI"
+                  title="AI Tutor"
                   editing={undefined}
                   setEditing={undefined}
                   save={undefined}

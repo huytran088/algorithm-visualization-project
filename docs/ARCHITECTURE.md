@@ -72,7 +72,7 @@ app/
 ├── routes/                 # Page components
 │   ├── index.tsx           #   Home: searchable grid of algorithm cards
 │   ├── run.tsx             #   Visualizer page
-│   ├── wiki.tsx            #   User guide (placeholder)
+│   ├── wiki.tsx            #   User guide
 │   └── interp.tsx          #   Developer page: shows JS / parse tree / trace
 ├── globals.ts              # App constants, menu links, algorithm catalogue,
 │                           #   base path, AI endpoint
@@ -100,7 +100,8 @@ app/
 ├── components/
 │   ├── frames/             # AppFrame (top bar, menu, theme), VisualizerLayout
 │   ├── headers/            # TopBar, PaneHeader
-│   ├── panes/              # VisPane, CodePane, VarsPane, AIPane
+│   ├── panes/              # VisPane, CodePane, VarsPane, AIPane (the AI Tutor)
+│   ├── wiki/               # Wiki sections, shared parts, and tested examples
 │   ├── visualization/      # VisFrame (controls), VisBuilder (state machine),
 │   │   └── table/          #   VisRenderer, Table* primitives (marks, text)
 │   ├── Monaco.tsx          # Code editor with line highlighting
@@ -167,9 +168,9 @@ UI preferences are stored in `localStorage`:
 
 Nothing is sent to a server except AI prompts.
 
-### AI pane
+### AI Tutor
 
-`AIPane` builds a prompt containing the language rules and the current code,
+The AI Tutor is implemented by `AIPane`, which builds a prompt containing the language rules and the current code,
 then POSTs `{ message }` to `Globals.AIApiURL` (overridable with
 `VITE_AI_API_URL`). It expects `{ generated_code }` back. The returned code is
 loaded into the editor in editing mode, so the user must explicitly **Save**
@@ -216,10 +217,9 @@ into `nginx:alpine`, under the configured base path. The nginx config
 
 - The **Open**, **Import**, **Export** and **About** menu items are stubs
   (`alert('TODO')`, disabled) in `app/globals.ts`.
-- `/wiki` is a placeholder page.
 - `/interp` is a developer debugging page and is marked for removal before
   production.
 - `vis_sort` handling in `VisBuilder` is unverified, and `VisBuilder` still
   renders a raw JSON dump of its state for debugging.
-- The language has no `do ... while` documentation beyond the grammar, and no
-  compound `*=`, `/=` or `%=` assignment (only `=`, `+=` and `-=`).
+- The language has no compound `*=`, `/=` or `%=` assignment (only `=`, `+=`
+  and `-=`).
