@@ -78,10 +78,10 @@ export default function PseudocodeSection() {
           href={`${Globals.RouteBaseName}run?algorithm=linear_search`}
           className="underline"
         >
-          Open this algorithm in the visualizer
+          Open Linear Search in the visualizer
         </a>
         {' '}
-        to step through it.
+        to step through the bundled version.
       </WikiText>
 
       <WikiSubheading>Basics</WikiSubheading>
@@ -177,9 +177,24 @@ export default function PseudocodeSection() {
       <WikiText>
         Directives control what the visualization shows. Put one at the start
         of a line, before the statement it annotates, or before a function
-        parameter. You can chain several on one line, but a directive cannot
-        sit on a line by itself. Directives change only the visualization, not
-        your program&apos;s variables.
+        parameter. On a
+        {' '}
+        <WikiCode>for</WikiCode>
+        {' '}
+        loop, you can also put it right after the word
+        {' '}
+        <WikiCode>for</WikiCode>
+        . You can chain several on one line, but a directive cannot sit on a
+        line by itself. Directives change only the visualization, not your
+        program&apos;s variables.
+      </WikiText>
+      <WikiText>
+        Directives on an
+        {' '}
+        <WikiCode>if</WikiCode>
+        {' '}
+        statement are currently ignored, with no error. Put them on a statement
+        inside the block instead.
       </WikiText>
       <DataTable
         label="Visual directives"
@@ -194,17 +209,13 @@ export default function PseudocodeSection() {
       />
       <CodeBlock code={WikiExamples.directives} />
       <WikiText>
-        Use outlines for cursors and iterators. Use highlights sparingly, for
-        found, swap, and warning states, and use the text mark only on
+        Use outlines for cursors and iterators, and use highlights sparingly,
+        for found, swap, and warning states. The interpreter adds comparison
+        text and array-access marks automatically. A hand-written
         {' '}
-        <WikiCode>if</WikiCode>
+        <WikiCode>text</WikiCode>
         {' '}
-        and
-        {' '}
-        <WikiCode>while</WikiCode>
-        {' '}
-        statements. The interpreter also adds comparison and array-access marks
-        automatically.
+        mark displays nothing, so you don&apos;t need one.
       </WikiText>
 
       <WikiText>

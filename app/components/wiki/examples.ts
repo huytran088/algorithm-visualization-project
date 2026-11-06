@@ -19,7 +19,7 @@ fun Linear_Search(@init<table> a, k):
     n = length(a)
 
     for @mark<i, outline, yellow> (i = 0; i < n; i += 1):
-        @mark<i, text, fg> if (a[i] == k):
+        if (a[i] == k):
             @mark<i, highlight, green> return i
         end if
     end for
@@ -73,7 +73,7 @@ export const WikiDirectives = [
   {
     name: 'mark',
     usage: '@mark<index, kind, color>',
-    parameters: 'kind: outline (default), highlight or text. ' +
+    parameters: 'kind: outline (default) or highlight. ' +
       'color: for example yellow (default), green or red.',
     effect: 'Mark a cell',
   },

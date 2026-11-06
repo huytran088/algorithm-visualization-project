@@ -51,8 +51,8 @@ export default function AiTutorSection() {
       >
         <strong>The AI Tutor is temporarily unavailable.</strong>
         {' '}
-        Clicking Generate will show an error until the AI service is back. The
-        rest of the app is not affected.
+        Generate won&apos;t work until the AI service is back. The rest of the
+        app is not affected.
       </p>
 
       <WikiText>

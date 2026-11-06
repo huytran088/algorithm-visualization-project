@@ -36,6 +36,11 @@ describe('wiki examples', () => {
     expect(new TsInterpreterVisitor().visit(parse(source))).toBeTypeOf('string');
   });
 
+  it.each(examples)('%s has no directive on an if statement', (_name, source) => {
+    // visitIfStatement ignores metadata, so it would silently do nothing
+    expect(source).not.toMatch(/^\s*@.*>\s*(else\s+)?if\b/m);
+  });
+
   it('do-while example returns the expected value', () => {
     expect(finalValue(WikiExamples.doWhile, 'result')).toBe(3);
   });

@@ -174,8 +174,22 @@ export default function ArchitectureSection() {
         , which runs the program again and records new steps.
       </WikiText>
       <WikiText>
-        Each loop stops after about 1000 iterations, so an infinite loop cannot
-        freeze the page.
+        <WikiCode>for</WikiCode>
+        ,
+        {' '}
+        <WikiCode>while</WikiCode>
+        , and
+        {' '}
+        <WikiCode>do ... while</WikiCode>
+        {' '}
+        loops each stop after about 1000 iterations, with no warning. This
+        protects the page from a simple infinite loop, but it has limits. It
+        applies to each loop separately, so nested loops can still produce
+        millions of steps, and
+        {' '}
+        <WikiCode>for ... in</WikiCode>
+        {' '}
+        loops are not limited at all. Either can slow down or freeze the page.
       </WikiText>
 
       <WikiSubheading>What stays in your browser</WikiSubheading>
@@ -184,7 +198,7 @@ export default function ArchitectureSection() {
         in your browser&apos;s
         {' '}
         <WikiCode>localStorage</WikiCode>
-        . The only thing that leaves your browser is what you send to the
+        . Your code leaves your browser only when you use the
         {' '}
         <a
           href="#ai-tutor"
@@ -192,7 +206,8 @@ export default function ArchitectureSection() {
         >
           AI Tutor
         </a>
-        .
+        . As with most websites, the site&apos;s host and Google Fonts receive
+        standard request details, such as your IP address, when a page loads.
       </WikiText>
 
       <WikiText>

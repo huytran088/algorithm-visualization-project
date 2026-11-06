@@ -125,6 +125,32 @@ describe('Test route: wiki', async () => {
     });
   });
 
+  test('Check that the loop limit is described accurately', async () => {
+    await render(<Wiki />);
+
+    const section = document.getElementById('architecture');
+
+    await expect(section).toHaveTextContent('for ... in');
+    await expect(section).toHaveTextContent('nested loops');
+    await expect(section).not.toHaveTextContent('cannot freeze');
+  });
+
+  test('Check that third-party font requests are disclosed', async () => {
+    await render(<Wiki />);
+
+    await expect(document.getElementById('architecture'))
+      .toHaveTextContent('Google Fonts');
+  });
+
+  test('Check that directive limits are explained', async () => {
+    await render(<Wiki />);
+
+    const section = document.getElementById('pseudocode');
+
+    await expect(section).toHaveTextContent('right after the word for');
+    await expect(section).toHaveTextContent('Directives on an if statement');
+  });
+
   test('Check that internal links use the base path', async () => {
     const screen = await render(<Wiki />);
     const links = [
