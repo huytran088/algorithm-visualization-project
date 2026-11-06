@@ -31,6 +31,7 @@ describe('Test route: wiki', async () => {
   afterEach(() => {
     localStorage.removeItem('theme');
     document.body.classList.remove('dark');
+    history.scrollRestoration = 'auto';
   });
 
   test('Check that AppFrame is rendered', async () => {
@@ -93,6 +94,35 @@ describe('Test route: wiki', async () => {
 
     await expect(sectionTop).toBeGreaterThanOrEqual(scrollerTop);
     await expect(sectionTop).toBeLessThan(scrollerTop + scroller.clientHeight);
+  });
+
+  test('Check that Back returns to the previous section', async () => {
+    await page.viewport(1024, 768);
+
+    // root.tsx's ScrollRestoration makes this manual in production
+    history.scrollRestoration = 'manual';
+
+    const screen = await renderWiki();
+    const scroller = content(screen.baseElement);
+    const nav = screen.getByRole('navigation', { name: 'Wiki sections' });
+
+    await nav.getByRole('link', { name: 'Pseudocode' }).click();
+    await vi.waitFor(() => expect(location.hash).toBe('#pseudocode'));
+    await nav.getByRole('link', { name: 'AI Tutor' }).click();
+    await vi.waitFor(() => expect(location.hash).toBe('#ai-tutor'));
+
+    history.back();
+
+    await vi.waitFor(() => {
+      expect(location.hash).toBe('#pseudocode');
+
+      const top = document.getElementById('pseudocode')!
+        .getBoundingClientRect().top;
+      const scrollerTop = scroller.getBoundingClientRect().top;
+
+      expect(top).toBeGreaterThanOrEqual(scrollerTop);
+      expect(top).toBeLessThan(scrollerTop + scroller.clientHeight);
+    });
   });
 
   test('Check that internal links use the base path', async () => {

@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import Globals from '../globals';
 
 import AppFrame from '../components/frames/AppFrame';
@@ -21,6 +23,24 @@ const Sections = [
  * to know in order to use the app to its fullest extent.
  */
 export default function Wiki() {
+  // The page scrolls inside #wiki-content, but ScrollRestoration only manages
+  // the window, so Back and Forward would change the URL without moving.
+  useEffect(() => {
+    const syncScroll = () => {
+      const target = document.getElementById(location.hash.slice(1));
+
+      if (target) {
+        target.scrollIntoView();
+      } else {
+        document.getElementById('wiki-content')?.scrollTo(0, 0);
+      }
+    };
+
+    window.addEventListener('hashchange', syncScroll);
+
+    return () => window.removeEventListener('hashchange', syncScroll);
+  }, []);
+
   return (
     <>
       <PageMeta
