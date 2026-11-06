@@ -54,7 +54,7 @@ export default function AIPane(
             const message = `
 Arrays are initialized as var = arr[...], not var = [...].
 "arr" is thus a keyword and cannot be a variable name.
-Do while loops are not currently implemented.
+Do-while loops are written as "do:", then the body, then "while (condition)", with no "end" keyword.
 
 All function names must start with a capital letter.
 Do not assume implicit functions are available unless found in example code.
