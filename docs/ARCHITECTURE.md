@@ -171,7 +171,7 @@ Nothing is sent to a server except AI prompts.
 ### AI Tutor
 
 The AI Tutor is implemented by `AIPane`, which builds a prompt containing the language rules and the current code,
-then POSTs `{ message }` to `Globals.AIApiURL` (overridable with
+then POSTs `{ query }` to `Globals.AIApiURL` (overridable with
 `VITE_AI_API_URL`). It expects `{ generated_code }` back. The returned code is
 loaded into the editor in editing mode, so the user must explicitly **Save**
 it.
