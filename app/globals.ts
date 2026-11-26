@@ -71,6 +71,19 @@ const Globals = {
     Error: 'Failed to Process Request!',
   },
 
+  // Shown on the AI button when a request fails, for AIErrorDisplayMs
+  AIErrorStrings: {
+    NoRequest: 'Type a request first',
+    RateLimited: 'Too many requests, try again in a minute',
+    Unavailable: 'The AI service is unavailable',
+    TooLong: 'Request or code is too long',
+    Network: 'Can\'t reach the AI service',
+    Failed: 'Failed to Process Request!',
+  },
+  AIErrorDisplayMs: 2000,
+  // Matches the backend's limit on the request field
+  AIRequestMaxLength: 2000,
+
   MenuLinksHome: [
     {
       icon: PlusCircle,

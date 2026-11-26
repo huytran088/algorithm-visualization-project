@@ -8,12 +8,14 @@ import {
 const PipelineSteps = [
   {
     title: 'Prompt',
-    text: 'The app combines the language rules, the code in your editor, and ' +
-      'your request. If you leave the request empty, it uses the page title.',
+    text: 'The app sends your request, the code in your editor, and the ' +
+      'language rules as separate parts. If you leave the request empty, it ' +
+      'uses the page title.',
   },
   {
     title: 'Retrieve',
-    text: 'The AI service searches its knowledge base for the 6 most similar ' +
+    text: 'The AI service searches its knowledge base using only your ' +
+      'request and your code, not the rules. It finds the 6 most similar ' +
       'functions, using BAAI/bge-base-en-v1.5 embeddings and a FAISS index. ' +
       'BAAI/bge-reranker-base then reranks them and keeps the best 2.',
   },
@@ -31,7 +33,8 @@ const PipelineSteps = [
 
 const FactRows = [
   ['Knowledge base', '12 .avp files, split into one entry per function'],
-  ['Rate limit', '10 requests per minute'],
+  ['Rate limit', '10 requests per minute. After that, the button says to try again in a minute'],
+  ['Length', 'Requests up to 2,000 characters, and code up to 20,000 characters'],
   ['Caching', 'Repeated requests may be answered from a 1-hour cache'],
   ['Memory', 'None. Each request stands alone, with no conversation history'],
 ] as const;
@@ -45,16 +48,6 @@ export default function AiTutorSection() {
       id="ai-tutor"
       title="AI Tutor"
     >
-      <p
-        role="note"
-        className="rounded-md border-l-4 border-primary bg-primary/5 p-4 leading-7 text-primary"
-      >
-        <strong>The AI Tutor is temporarily unavailable.</strong>
-        {' '}
-        Generate won&apos;t work until the AI service is back. The rest of the
-        app is not affected.
-      </p>
-
       <WikiText>
         The AI Tutor writes
         {' '}

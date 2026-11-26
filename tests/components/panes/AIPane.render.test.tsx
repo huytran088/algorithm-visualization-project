@@ -4,23 +4,52 @@ import { afterEach, expect, test, describe, vi } from 'vitest';
 import AIPane from '../../../app/components/panes/AIPane';
 import Globals from '../../../app/globals';
 
+const Source = 'x = 1';
+
 /**
- * Renders the pane with the page elements it reads when generating.
+ * Renders the pane with the page title it reads when generating.
  */
 async function renderPane(
-  setSrc: (src: string) => void,
-  setEditing: (editing: boolean) => void,
+  {
+    setSrc = () => {},
+    setEditing = () => {},
+    editing = false,
+    title = 'Linear Search',
+  }: {
+    setSrc?: (src: string) => void
+    setEditing?: (editing: boolean) => void
+    editing?: boolean
+    title?: string
+  } = {},
 ) {
-  return render(
+  const ui = (isEditing: boolean) => (
     <>
-      <div id="title">Linear Search</div>
-      <div id="sourceCode">x = 1</div>
+      <div id="title">{title}</div>
       <AIPane
+        source={Source}
+        editing={isEditing}
         setSrc={setSrc}
         setEditing={setEditing}
       />
-    </>,
+    </>
   );
+
+  const screen = await render(ui(editing));
+  return {
+    screen,
+    setEditingProp: (isEditing: boolean) => screen.rerender(ui(isEditing)),
+  };
+}
+
+function stubFetch(response: () => Response | Promise<Response>) {
+  const fetchMock = vi.fn(async () => response());
+  vi.stubGlobal('fetch', fetchMock);
+  return fetchMock;
+}
+
+function requestBody(fetchMock: ReturnType<typeof stubFetch>) {
+  const calls = fetchMock.mock.calls as unknown as [string, RequestInit][];
+  return JSON.parse(calls[0][1].body as string);
 }
 
 describe('Test component: <AIPane />', async () => {
@@ -28,75 +57,122 @@ describe('Test component: <AIPane />', async () => {
     vi.unstubAllGlobals();
   });
 
-  test('Check that the prompt describes do-while syntax', async () => {
-    const fetchMock = vi.fn(async () => Response.json({
-      generated_code: 'x = 2',
-    }));
-    vi.stubGlobal('fetch', fetchMock);
-
-    const screen = await renderPane(() => {}, () => {});
-    await screen.getByRole('button', { name: 'Generate' }).click();
-
-    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-
-    const calls = fetchMock.mock.calls as unknown as [string, RequestInit][];
-    const { query } = JSON.parse(calls[0][1].body as string);
-
-    await expect(query).toContain('"do:"');
-    await expect(query).toContain('"while (condition)"');
-    await expect(query).not.toContain('not currently implemented');
-  });
-
   test('Check that the request matches the RAG API schema', async () => {
-    const fetchMock = vi.fn(async () => Response.json({
-      generated_code: 'x = 2',
-    }));
-    vi.stubGlobal('fetch', fetchMock);
+    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x' }));
 
-    const screen = await renderPane(() => {}, () => {});
+    const { screen } = await renderPane();
+    await screen.getByRole('textbox').fill('Sort it descending');
     await screen.getByRole('button', { name: 'Generate' }).click();
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
 
     const calls = fetchMock.mock.calls as unknown as [string, RequestInit][];
-    const [url, init] = calls[0];
-    const body = JSON.parse(init.body as string);
+    await expect(calls[0][0]).toBe(Globals.AIApiURL);
+    await expect(calls[0][1].method).toBe('POST');
 
-    // POST /api/generate only accepts { query } and rejects { message } (422)
-    await expect(url).toBe(Globals.AIApiURL);
-    await expect(init.method).toBe('POST');
-    await expect(Object.keys(body)).toEqual(['query']);
-    await expect(body.query).toContain('Linear Search');
+    const body = requestBody(fetchMock);
+    await expect(Object.keys(body).sort())
+      .toEqual(['code', 'instructions', 'query']);
+    await expect(body.query).toBe('Sort it descending');
+    await expect(body.code).toBe(Source);
+    await expect(body.instructions).toContain('"do:"');
+    await expect(body.instructions).toContain('"while (condition)"');
   });
 
-  test('Check that an API error shows the error state', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => Response.json(
-      { detail: 'hf provider is not configured' },
-      { status: 503 },
-    )));
+  test('Check that an empty request uses the page title', async () => {
+    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x' }));
 
-    const setSrc = vi.fn();
+    const { screen } = await renderPane();
+    await screen.getByRole('button', { name: 'Generate' }).click();
 
-    const screen = await renderPane(setSrc, () => {});
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    await expect(requestBody(fetchMock).query).toContain('Linear Search');
+  });
+
+  test('Check that an unnamed page with no request is not sent', async () => {
+    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x' }));
+
+    const { screen } = await renderPane({ title: '<unnamed>' });
     await screen.getByRole('button', { name: 'Generate' }).click();
 
     await expect.element(screen.getByRole('button'))
-      .toHaveTextContent(Globals.AIButtonStrings.Error);
-    await expect(setSrc).not.toHaveBeenCalled();
+      .toHaveTextContent(Globals.AIErrorStrings.NoRequest);
+    await expect(fetchMock).not.toHaveBeenCalled();
   });
 
   test('Check that returned code opens in edit mode', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => Response.json({
-      generated_code: '```avp\nx = 2\n```',
-    })));
+    stubFetch(() => Response.json({ generated_code: '```avp\nx = 2\n```' }));
 
     const setSrc = vi.fn();
     const setEditing = vi.fn();
 
-    const screen = await renderPane(setSrc, setEditing);
+    const { screen } = await renderPane({ setSrc, setEditing });
     await screen.getByRole('button', { name: 'Generate' }).click();
 
     await vi.waitFor(() => expect(setEditing).toHaveBeenCalledWith(true));
     await expect(setSrc).toHaveBeenCalledWith('x = 2\n');
+  });
+
+  test('Check that the button waits while generating', async () => {
+    let resolve: (res: Response) => void = () => {};
+    stubFetch(() => new Promise<Response>((r) => {
+      resolve = r;
+    }));
+
+    const { screen } = await renderPane();
+    await screen.getByRole('button', { name: 'Generate' }).click();
+
+    const button = screen.getByRole('button');
+    await expect.element(button)
+      .toHaveTextContent(Globals.AIButtonStrings.Wait.Running);
+    await expect.element(button).toBeDisabled();
+
+    resolve(Response.json({ generated_code: 'x' }));
+  });
+
+  test('Check that the button is locked while editing', async () => {
+    const { screen, setEditingProp } = await renderPane({ editing: true });
+
+    const button = screen.getByRole('button');
+    await expect.element(button)
+      .toHaveTextContent(Globals.AIButtonStrings.Wait.Editing);
+    await expect.element(button).toBeDisabled();
+
+    await setEditingProp(false);
+    await expect.element(button)
+      .toHaveTextContent(Globals.AIButtonStrings.Run);
+    await expect.element(button).toBeEnabled();
+  });
+
+  test.each([
+    [429, 'RateLimited'],
+    [503, 'Unavailable'],
+    [422, 'TooLong'],
+  ] as const)('Check that HTTP %i shows the %s message', async (status, key) => {
+    stubFetch(() => Response.json({ detail: 'x' }, { status }));
+
+    const setSrc = vi.fn();
+
+    const { screen } = await renderPane({ setSrc });
+    await screen.getByRole('button', { name: 'Generate' }).click();
+
+    await expect.element(screen.getByRole('button'))
+      .toHaveTextContent(Globals.AIErrorStrings[key]);
+    await expect(setSrc).not.toHaveBeenCalled();
+  });
+
+  test('Check that the button recovers after an error', async () => {
+    stubFetch(() => Response.json({ detail: 'x' }, { status: 503 }));
+
+    const { screen } = await renderPane();
+    await screen.getByRole('button', { name: 'Generate' }).click();
+
+    const button = screen.getByRole('button');
+    await expect.element(button)
+      .toHaveTextContent(Globals.AIErrorStrings.Unavailable);
+
+    await expect.element(button, { timeout: Globals.AIErrorDisplayMs + 2000 })
+      .toHaveTextContent(Globals.AIButtonStrings.Run);
+    await expect.element(button).toBeEnabled();
   });
 });
