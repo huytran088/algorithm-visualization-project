@@ -47,7 +47,8 @@ jobs:
   # -------------------------------------------------------------------------
   browser-tests:
     name: Browser tests (${{ matrix.browser }})
-    runs-on: ubuntu-latest
+    # Pinned: Playwright 1.59 can't install browsers on ubuntu-latest (26.04)
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
