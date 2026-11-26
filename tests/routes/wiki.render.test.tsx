@@ -166,13 +166,20 @@ describe('Test route: wiki', async () => {
   });
 
   test('Check that the AI section states availability and data use', async () => {
-    const screen = await render(<Wiki />);
+    await render(<Wiki />);
     const section = document.getElementById('ai-tutor')!;
 
-    await expect.element(screen.getByRole('note'))
-      .toHaveTextContent('temporarily unavailable');
+    await expect(section).not.toHaveTextContent('temporarily unavailable');
     await expect(section).toHaveTextContent('third-party host');
     await expect(section).toHaveTextContent('all of the code in your editor');
+  });
+
+  test('Check that the AI section explains what is searched', async () => {
+    await render(<Wiki />);
+    const section = document.getElementById('ai-tutor')!;
+
+    await expect(section).toHaveTextContent('only your request and your code');
+    await expect(section).toHaveTextContent('2,000 characters');
   });
 
   test('Check that the AI section does not imply teaching or chat', async () => {

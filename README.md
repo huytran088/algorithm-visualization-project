@@ -45,7 +45,7 @@ Copy `.env.example` to `.env` to override defaults:
 
 | Variable | Purpose |
 | --- | --- |
-| `VITE_AI_API_URL` | Endpoint used by the AI pane (`POST {query}` → `{generated_code}`) |
+| `VITE_AI_API_URL` | Endpoint used by the AI pane (`POST {query, code, instructions}` → `{generated_code}`) |
 | `VITE_BASE_PATH` | Base path the app is served from. Default `/avp/` (GitHub Pages); Docker uses `/` |
 
 ### Development

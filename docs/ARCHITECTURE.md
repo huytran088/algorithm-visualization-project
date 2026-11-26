@@ -170,11 +170,23 @@ Nothing is sent to a server except AI prompts.
 
 ### AI Tutor
 
-The AI Tutor is implemented by `AIPane`, which builds a prompt containing the language rules and the current code,
-then POSTs `{ query }` to `Globals.AIApiURL` (overridable with
-`VITE_AI_API_URL`). It expects `{ generated_code }` back. The returned code is
+The AI Tutor is implemented by `AIPane` and the `useAITutor` hook. The hook
+POSTs `{ query, code, instructions }` to `Globals.AIApiURL` (overridable with
+`VITE_AI_API_URL`):
+
+- `query`: the user's request, or `Write the "<title>" algorithm.` when it is
+  empty. An empty request on an unnamed page is refused before any network
+  call.
+- `code`: the current editor source (omitted when empty).
+- `instructions`: the language rules (`TutorInstructions`). The backend adds
+  them to the prompt but searches its knowledge base with only `query` and
+  `code`.
+
+It expects `{ generated_code }` back. Code fences are stripped and the code is
 loaded into the editor in editing mode, so the user must explicitly **Save**
-it.
+it. While editing, the button is locked. HTTP 429, 503, 422 and network
+failures each show their own message from `Globals.AIErrorStrings` for
+`Globals.AIErrorDisplayMs`.
 
 ### Base path
 
