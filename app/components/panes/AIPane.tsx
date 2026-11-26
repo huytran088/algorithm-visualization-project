@@ -93,8 +93,9 @@ ${(document.getElementById('aiInput') as HTMLTextAreaElement)!.value}
               headers: {
                 'Content-Type': 'application/json',
               },
+              // The RAG API (POST /api/generate) expects { query }
               body: JSON.stringify({
-                message: message,
+                query: message,
               }),
             })
               .then(res => res.json())
