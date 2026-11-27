@@ -90,11 +90,10 @@ export default function useAlgo(
   }, [didLoad, didCompile]);
 
   useEffect(() => {
-    if (!interpreterTrace) return;
-    setDidCompile(false);
-
+    // An interpreter crash leaves the trace empty, so check the error first:
+    // otherwise the previous run's trace stayed on screen. The code pane
+    // reports the error itself.
     if (interpreterError) {
-      alert('Failed to compile algorithm!');
       setComp([{
         line: -1,
         actions: [],
@@ -103,9 +102,11 @@ export default function useAlgo(
       return;
     }
 
+    if (!interpreterTrace) return;
+    setDidCompile(false);
     setComp(JSON.parse(interpreterTrace));
     setDidCompile(true);
-  }, [interpreterTrace]);
+  }, [interpreterTrace, interpreterError]);
 
   return [
     src,
