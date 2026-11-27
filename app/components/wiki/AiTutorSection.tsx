@@ -25,6 +25,13 @@ const PipelineSteps = [
       'a language model writes the result.',
   },
   {
+    title: 'Check',
+    text: 'The app runs the result through the same interpreter the ' +
+      'visualizer uses. It fixes simple directive and array mistakes itself. ' +
+      'If the code still fails, it sends the errors back once and asks for a ' +
+      'corrected version.',
+  },
+  {
     title: 'Review',
     text: 'The code opens in the editor in edit mode. Nothing runs until you ' +
       'click Save.',

@@ -58,7 +58,7 @@ describe('Test component: <AIPane />', async () => {
   });
 
   test('Check that the request matches the RAG API schema', async () => {
-    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x' }));
+    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x = 1' }));
 
     const { screen } = await renderPane();
     await screen.getByRole('textbox').fill('Sort it descending');
@@ -80,7 +80,7 @@ describe('Test component: <AIPane />', async () => {
   });
 
   test('Check that an empty request uses the page title', async () => {
-    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x' }));
+    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x = 1' }));
 
     const { screen } = await renderPane();
     await screen.getByRole('button', { name: 'Generate' }).click();
@@ -90,7 +90,7 @@ describe('Test component: <AIPane />', async () => {
   });
 
   test('Check that an unnamed page with no request is not sent', async () => {
-    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x' }));
+    const fetchMock = stubFetch(() => Response.json({ generated_code: 'x = 1' }));
 
     const { screen } = await renderPane({ title: '<unnamed>' });
     await screen.getByRole('button', { name: 'Generate' }).click();
@@ -113,6 +113,52 @@ describe('Test component: <AIPane />', async () => {
     await expect(setSrc).toHaveBeenCalledWith('x = 2\n');
   });
 
+  test('Check that invalid code is repaired before it is loaded', async () => {
+    const replies = [
+      'pi = @call<Part, a1>\n',
+      'x = 2\n',
+    ];
+    let release: () => void = () => {};
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const fetchMock = stubFetch(async () => {
+      const reply = replies.shift()!;
+      if (replies.length === 0) await gate;
+      return Response.json({ generated_code: reply });
+    });
+
+    const setSrc = vi.fn();
+
+    const { screen } = await renderPane({ setSrc });
+    await screen.getByRole('button', { name: 'Generate' }).click();
+
+    await expect.element(screen.getByRole('button'))
+      .toHaveTextContent(Globals.AIButtonStrings.Wait.Repairing);
+    release();
+
+    await vi.waitFor(() => expect(setSrc).toHaveBeenCalledWith('x = 2\n'));
+    await expect(setSrc).toHaveBeenCalledOnce();
+    await expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  test('Check that code still invalid after repair is loaded with a warning', async () => {
+    stubFetch(() => Response.json({
+      generated_code: 'pi = @call<Part, a1>\n',
+    }));
+
+    const setSrc = vi.fn();
+    const setEditing = vi.fn();
+
+    const { screen } = await renderPane({ setSrc, setEditing });
+    await screen.getByRole('button', { name: 'Generate' }).click();
+
+    await expect.element(screen.getByRole('button'))
+      .toHaveTextContent(Globals.AIErrorStrings.Invalid);
+    await expect(setSrc).toHaveBeenCalledWith('pi = @call<Part, a1>\n');
+    await expect(setEditing).toHaveBeenCalledWith(true);
+  });
+
   test('Check that the button waits while generating', async () => {
     let resolve: (res: Response) => void = () => {};
     stubFetch(() => new Promise<Response>((r) => {
@@ -127,7 +173,7 @@ describe('Test component: <AIPane />', async () => {
       .toHaveTextContent(Globals.AIButtonStrings.Wait.Running);
     await expect.element(button).toBeDisabled();
 
-    resolve(Response.json({ generated_code: 'x' }));
+    resolve(Response.json({ generated_code: 'x = 1' }));
   });
 
   test('Check that the button is locked while editing', async () => {

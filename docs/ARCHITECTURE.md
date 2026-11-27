@@ -182,9 +182,23 @@ POSTs `{ query, code, instructions }` to `Globals.AIApiURL` (overridable with
   them to the prompt but searches its knowledge base with only `query` and
   `code`.
 
-It expects `{ generated_code }` back. Code fences are stripped and the code is
-loaded into the editor in editing mode, so the user must explicitly **Save**
-it. While editing, the button is locked. HTTP 429, 503, 422 and network
+It expects `{ generated_code }` back. Code fences are stripped, then
+`generateTutorCode` checks the code before loading it:
+
+1. `autoFixDirectives` (`interpreter/autofix.ts`) fixes mistakes whose intent
+   is unambiguous: a directive on a line by itself, an expression as a
+   directive argument, and an `arr[...]` literal outside an assignment.
+2. `validateSource` (`interpreter/validate.ts`) parses and traces the code with
+   the real grammar and `TraceInterpreterVisitor`. It reports syntax errors
+   (with plain explanations of directive and array-literal mistakes), runtime
+   errors, logged interpreter errors, a missing top-level call, and arrays that
+   are never visualized.
+3. If problems remain, one repair request (`Globals.AIRepairAttempts`) sends
+   the code and the problems back to the model.
+
+The code is loaded into the editor in editing mode either way, so the user must
+explicitly **Save** it. Code that still has problems shows
+`AIErrorStrings.Invalid` on the button. While editing, the button is locked. HTTP 429, 503, 422 and network
 failures each show their own message from `Globals.AIErrorStrings` for
 `Globals.AIErrorDisplayMs`.
 

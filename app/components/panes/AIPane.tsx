@@ -45,6 +45,8 @@ export default function AIPane(
   let label: string = Globals.AIButtonStrings.Run;
   if (status === 'running') {
     label = Globals.AIButtonStrings.Wait.Running;
+  } else if (status === 'repairing') {
+    label = Globals.AIButtonStrings.Wait.Repairing;
   } else if (status === 'error') {
     label = error;
   } else if (editing) {
