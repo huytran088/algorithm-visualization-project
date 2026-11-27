@@ -57,6 +57,20 @@ export default class TraceInterpreterVisitor
   // The array shown in the table. Marks, updates and swaps are only drawn for
   // this array (compared by reference, so aliases like a1/array match).
   private visualized: any[] | null = null;
+  // Call depth of the frame that showed `visualized` (0 = top level). While
+  // that frame runs, @init on another array (a helper's temporary, a merge
+  // sort half) is ignored, so the table doesn't jump between arrays.
+  private visualizedDepth = 0;
+
+  /**
+   * Whether an @init on `value` may show it, from a frame at `depth`.
+   */
+  private canVisualize(value: any, depth: number) {
+    if (!Array.isArray(value) || value === this.visualized) return false;
+    return this.visualized === null ||
+      this.callStack.length < this.visualizedDepth ||
+      depth <= this.visualizedDepth;
+  }
 
   protected defaultResult(): any {
     return null;
@@ -319,14 +333,16 @@ export default class TraceInterpreterVisitor
 
     this.memory.set(name, value);
     const snapshotValue = Array.isArray(value) ? [...value] : value;
-    const metadataActions = this.extractMetadataActions(ctx);
-
-    metadataActions.forEach((action) => {
-      if (action.cmd === 'vis_init') {
+    const metadataActions = this.extractMetadataActions(ctx)
+      .filter((action) => {
+        if (action.cmd !== 'vis_init') return true;
+        // Same rule as @init on a parameter, from the current frame
+        if (!this.canVisualize(value, this.callStack.length)) return false;
         action.params.data = snapshotValue;
-        if (Array.isArray(value)) this.visualized = value;
-      }
-    });
+        this.visualized = value;
+        this.visualizedDepth = this.callStack.length;
+        return true;
+      });
 
     if (typeof value === 'number' && this.recentArrayAccesses.length > 0) {
       const unmarkActions: TraceAction[] = [...metadataActions];
@@ -473,11 +489,13 @@ export default class TraceInterpreterVisitor
           const action = this.processMetadata(meta);
           if (action && action.cmd === 'vis_init') {
             hasInit = true;
-            // Recursing on the array already shown must not reset the table
-            if (Array.isArray(val) && val === this.visualized) continue;
+            // Skip non-arrays, the array already shown (recursion), and other
+            // arrays while the call that showed the table is still running
+            if (!this.canVisualize(val, this.callStack.length + 1)) continue;
             action.params.data = snapshotVal;
             initActions.push(action);
-            if (Array.isArray(val)) this.visualized = val;
+            this.visualized = val;
+            this.visualizedDepth = this.callStack.length + 1;
           }
         }
       }
@@ -486,6 +504,7 @@ export default class TraceInterpreterVisitor
       if (!hasInit && Array.isArray(val) && this.visualized === null) {
         initActions.push({ cmd: 'vis_init', params: { data: snapshotVal, type: 'table' } });
         this.visualized = val;
+        this.visualizedDepth = this.callStack.length + 1;
       }
     });
 
