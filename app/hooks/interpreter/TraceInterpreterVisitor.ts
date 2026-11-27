@@ -325,7 +325,8 @@ export default class TraceInterpreterVisitor
   }
 
   visitValueArray(ctx: ValueArrayContext): any[] {
-    return ctx.expressionList().expression().map((e) => {
+    // arr[] is an empty array
+    return (ctx.expressionList()?.expression() ?? []).map((e) => {
       const val = this.visit(e);
       return typeof val === 'number' ? val : parseInt(String(val), 10);
     });
