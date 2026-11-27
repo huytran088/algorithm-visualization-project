@@ -66,6 +66,7 @@ const Globals = {
     Run: 'Generate',
     Wait: {
       Running: 'Generating...',
+      Repairing: 'Fixing generated code...',
       Editing: 'Save or Discard Code to Continue...',
     },
     Error: 'Failed to Process Request!',
@@ -78,9 +79,12 @@ const Globals = {
     Unavailable: 'The AI service is unavailable',
     TooLong: 'Request or code is too long',
     Network: 'Can\'t reach the AI service',
+    Invalid: 'Generated code has errors, check it before saving',
     Failed: 'Failed to Process Request!',
   },
   AIErrorDisplayMs: 2000,
+  // Extra requests to fix code that fails the interpreter's checks
+  AIRepairAttempts: 1,
   // Matches the backend's limit on the request field
   AIRequestMaxLength: 2000,
 
