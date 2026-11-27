@@ -396,12 +396,24 @@ export default class TraceInterpreterVisitor
     }
 
     const args = exprList ? this.visit(exprList) : [];
-    return this.executeFunction(funcName, args, ctx.start!.line);
+    // A call statement's value is discarded: returning it would make the
+    // enclosing function stop as if it had hit `return`
+    this.executeFunction(funcName, args, ctx.start!.line);
+    return null;
   }
 
   executeFunction(name: string, args: any[], callLine: number) {
     const funcCtx = this.functions.get(name);
-    if (!funcCtx) return;
+    if (!funcCtx) {
+      this.addStep(callLine, [{
+        cmd: 'vis_log',
+        params: {
+          level: 'error',
+          text: `Unknown function '${name}'. Only length, size, floor, swap and functions defined with fun can be called.`,
+        },
+      }]);
+      return undefined;
+    }
     const paramCtxs = funcCtx.paramList()?.param() || [];
     const newScope: Scope = new Map();
     const initActions: TraceAction[] = [];
@@ -462,7 +474,8 @@ export default class TraceInterpreterVisitor
     this.clearFlushedMarks();
 
     this.callStack.pop();
-    return retVal;
+    // A function without `return` gives Null, not undefined
+    return retVal === undefined ? null : retVal;
   }
 
   visitForLoop(ctx: ForLoopContext): any {
