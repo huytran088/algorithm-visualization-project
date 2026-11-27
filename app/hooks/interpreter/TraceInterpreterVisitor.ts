@@ -67,6 +67,32 @@ export default class TraceInterpreterVisitor
     return nextResult;
   }
 
+  /**
+   * The variables the Vars pane shows: globals overlaid by each call frame,
+   * innermost last (the pane is keyed by name).
+   */
+  private visibleVars(): Map<string, any> {
+    const visible = new Map<string, any>(this.globalScope);
+    for (const frame of this.callStack) {
+      frame.forEach((value, key) => visible.set(key, value));
+    }
+    return visible;
+  }
+
+  /**
+   * var_add actions for every visible name bound to this array, so a write
+   * through one alias (array) also updates the others (a1).
+   */
+  private aliasUpdates(arr: any[]): TraceAction[] {
+    const actions: TraceAction[] = [];
+    this.visibleVars().forEach((value, name) => {
+      if (value === arr) {
+        actions.push({ cmd: 'var_add', params: { name, value: [...arr] } });
+      }
+    });
+    return actions;
+  }
+
   private get memory(): Scope {
     return this.callStack.length > 0 ? this.callStack[this.callStack.length - 1] : this.globalScope;
   }
@@ -284,7 +310,7 @@ export default class TraceInterpreterVisitor
           [];
         const actions: TraceAction[] = [...metadataActions,
           ...drawn,
-          { cmd: 'var_add', params: { name, value: [...arr] } },
+          ...this.aliasUpdates(arr),
         ];
         this.addStep(ctx.start!.line, actions);
       }
@@ -386,7 +412,7 @@ export default class TraceInterpreterVisitor
 
             if (arr1 === arr2 && arr1 === this.visualized) {
               this.addStep(ctx.start!.line, [
-                { cmd: 'var_add', params: { name: ref1.arrayName, value: [...arr1] } },
+                ...this.aliasUpdates(arr1),
                 { cmd: 'vis_mark', params: { index: ref1.index, type: 'highlight', color: 'green' } },
                 { cmd: 'vis_mark', params: { index: ref2.index, type: 'highlight', color: 'green' } },
                 { cmd: 'vis_swap', params: { index: ref1.index, index2: ref2.index } },
@@ -394,12 +420,8 @@ export default class TraceInterpreterVisitor
             } else {
               // Not (only) the visualized array: update Vars, and redraw
               // just the cell of the visualized array that changed, if any
-              const swapActions: TraceAction[] = [
-                { cmd: 'var_add', params: { name: ref1.arrayName, value: [...arr1] } },
-              ];
-              if (arr2 !== arr1) {
-                swapActions.push({ cmd: 'var_add', params: { name: ref2.arrayName, value: [...arr2] } });
-              }
+              const swapActions: TraceAction[] = [...this.aliasUpdates(arr1)];
+              if (arr2 !== arr1) swapActions.push(...this.aliasUpdates(arr2));
               for (const [arr, index] of [[arr1, ref1.index], [arr2, ref2.index]] as const) {
                 if (arr === this.visualized && arr1 !== arr2) {
                   swapActions.push(
@@ -490,17 +512,30 @@ export default class TraceInterpreterVisitor
       }
     }
 
+    this.callStack.pop();
+
+    // Show what the caller sees again: a name this call shadowed (e.g. the
+    // caller's own `array` in recursion) gets its caller value back instead
+    // of disappearing. Globals stay greyed unless we're back at top level.
     const cleanup: TraceAction[] = [];
-    newScope.forEach((_, key) => cleanup.push({ cmd: 'var_delete', params: { name: key } }));
-    this.globalScope.forEach((_, key) => cleanup.push({ cmd: 'var_normal', params: { name: key } }));
+    const visible = this.visibleVars();
+    newScope.forEach((_, key) => {
+      if (visible.has(key)) {
+        const value = visible.get(key);
+        cleanup.push({ cmd: 'var_add', params: { name: key, value: Array.isArray(value) ? [...value] : value } });
+      } else {
+        cleanup.push({ cmd: 'var_delete', params: { name: key } });
+      }
+    });
+    if (this.callStack.length === 0) {
+      this.globalScope.forEach((_, key) => cleanup.push({ cmd: 'var_normal', params: { name: key } }));
+    }
     if (retVal !== undefined && retVal !== null) {
       cleanup.push({ cmd: 'var_add', params: { name: 'result', value: retVal } });
     }
 
     this.addStep(callLine, cleanup);
     this.clearFlushedMarks();
-
-    this.callStack.pop();
     // A function without `return` gives Null, not undefined
     return retVal === undefined ? null : retVal;
   }
