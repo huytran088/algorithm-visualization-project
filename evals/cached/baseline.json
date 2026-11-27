@@ -1,0 +1,422 @@
+[
+  {
+    "task": "binary_search",
+    "code": "// Binary Search\n\na1 = arr[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n\nfun Binary_Search(@init<table> collection, target, size):\n    low = 0\n    high = size - 1\n\n    while (low <= high):\n        // Calculate middle index\n        mid = floor((low + high) / 2)\n        \n        // Get value at the middle\n        @mark<mid, highlight, yellow> val = collection[mid]\n        \n        if (val == target):\n            @mark<mid, highlight, green> return mid\n        end if\n        \n        if (val < target):\n            @mark<low, outline, yellow> low = mid + 1\n        end if\n        \n        if (val > target):\n            @mark<high, outline, yellow> high = mid - 1\n        end if\n    end while\n\n    @log<warn, \"Not found\"> return -1\nend fun\n\nresult = Binary_Search(a1, 7, 10)",
+    "expected": {
+      "bucket": "not_substitutable",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "binary_search_recursive",
+    "code": "// Recursive Binary Search\n\na1 = arr[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n\nfun Binary_Search_Recursive(@init<table> collection, target, low, high):\n    // Base case: element not found\n    @mark<low, outline, yellow> @mark<high, outline, yellow> if (low > high):\n        @log<warn, \"Not found\"> return -1\n    end if\n\n    // Calculate middle index\n    @mark<low, outline, yellow> @mark<high, outline, yellow> mid = floor((low + high) / 2)\n    \n    // Get value at the middle\n    @mark<mid, highlight, yellow> val = collection[mid]\n    \n    // Element found at mid\n    @mark<mid, text, fg> if (val == target):\n        @mark<mid, highlight, green> return mid\n    end if\n\n    // Target is in the left half\n    @mark<mid, text, fg> if (val > target):\n        @mark<high, outline, yellow> high = mid - 1\n        @mark<high, outline, yellow> return Binary_Search_Recursive(collection, target, low, high)\n    end if\n\n    // Target is in the right half\n    @mark<mid, text, fg> @mark<low, outline, yellow> low = mid + 1\n    @mark<low, outline, yellow> return Binary_Search_Recursive(collection, target, low, high)\nend fun\n\nresult = Binary_Search_Recursive(a1, 7, 0, length(a1) - 1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "bubble_sort",
+    "code": "// Bubble Sort\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Bubble_Sort(@init<table> array):\n    n = length(array)\n    for (i = 0; i < n; i += 1):\n        for (j = 0; j < n - i - 1; j += 1):\n            @mark<j, outline, yellow> if (array[j] > array[j + 1]):\n                @mark<j, highlight, green> swap(array[j], array[j + 1])\n            end if\n        end for\n    end for\n    return array\nend fun\n\nresult = Bubble_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "bubble_sort_early_exit",
+    "code": "// Bubble Sort\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Bubble_Sort(@init<table> array):\n    n = length(array)\n\n    for (i = 0; i < n; i += 1):\n        swapped = False\n\n        for (j = 0; j < n - i - 1; j += 1):\n            @mark<j, outline, yellow> if (array[j] > array[j + 1]):\n                @mark<j, highlight, green> swap(array[j], array[j + 1])\n                swapped = True\n            end if\n        end for\n\n        if (swapped == False):\n            break\n        end if\n    end for\n\n    return array\nend fun\n\nresult = Bubble_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "cocktail_sort",
+    "code": "// Cocktail Shaker Sort\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Cocktail_Shaker_Sort(@init<table> array):\n    n = length(array)\n    \n    // Set lower and upper bounds for the range of unsorted elements\n    lower_bound = 0\n    upper_bound = n - 1\n    \n    // Continue sorting while the range is valid\n    while (lower_bound < upper_bound):\n        swapped = False\n        \n        // Pass from left to right\n        @mark<lower_bound, outline, yellow> for (i = lower_bound; i < upper_bound; i += 1):\n            @mark<i, outline, yellow> if (array[i] > array[i + 1]):\n                @mark<i, highlight, green> swap(array[i], array[i + 1])\n                swapped = True\n            end if\n        end for\n        \n        // Reduce the upper bound since the largest element is now at the end\n        upper_bound -= 1\n        \n        // If no swaps occurred, the array is sorted\n        if (swapped == False):\n            break\n        end if\n        \n        // Pass from right to left\n        @mark<upper_bound, outline, yellow> for (i = upper_bound; i > lower_bound; i -= 1):\n            @mark<i, outline, yellow> if (array[i] < array[i - 1]):\n                @mark<i, highlight, green> swap(array[i], array[i - 1])\n                swapped = True\n            end if\n        end for\n        \n        // Increase the lower bound since the smallest element is now at the beginning\n        lower_bound += 1\n        \n        // If no swaps occurred, the array is sorted\n        if (swapped == False):\n            break\n        end if\n    end while\n    \n    return array\nend fun\n\nresult = Cocktail_Shaker_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "comparison_counting_sort",
+    "code": "// Comparison Counting Sort\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Comparison_Counting_Sort(@init<table> array): \n    n = length(array)\n\n    count = arr(n)  // create array to store counts\n\n    // initialize the count array\n    for (i = 0, i < n, i += 1):\n        count[i] = 0\n    end for\n\n    // count comparisons\n    for (i = 0, i < n - 1, i += 1):\n        for (j = i + 1, j < n, j += 1):\n            @mark<j, outline, yellow> if (array[i] < array[j]):\n                @mark<j, text, fg> count[j] += 1\n            else:\n                @mark<i, text, fg> count[i] += 1\n            end if\n        end for\n    end for\n\n    // place elements in sorted order back into array\n    for (i = 0, i < n, i += 1):\n        @mark<i, highlight, green> array[count[i]] = array[i]\n    end for\n\n    return array\n\nend fun\n\nresult = Comparison_Counting_Sort(a1)",
+    "expected": {
+      "bucket": "wrong_result",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "count_inversions",
+    "code": "// Inversion Count\n\na1 = arr[8, 4, 2, 1]\n\nfun Count_Inversions(@init<table> array):\n    n = length(array)\n    inv_count = 0  // initialize inversion counter\n\n    // check every pair i < j\n    for (i = 0, i < n - 1, i += 1):\n        for (j = i + 1, j < n, j += 1):\n            @mark<i, outline, yellow> @mark<j, outline, yellow> if (array[i] > array[j]):\n                @mark<i, highlight, green> @mark<j, highlight, green> inv_count += 1  // increment if inversion found\n            end if\n        end for\n    end for\n\n    return inv_count\nend fun\n\nresult = Count_Inversions(a1)",
+    "expected": {
+      "bucket": "invariant_cursor_unmarked",
+      "valid": true,
+      "correct": true,
+      "invariants": false
+    }
+  },
+  {
+    "task": "count_occurrences",
+    "code": "// Count Occurrences\n\na1 = arr[1, 2, 3, 2, 4, 2, 5]\n\nfun Count_Occurrences(@init<table> array, target, size):\n    count = 0\n    for (i = 0; i < size; i += 1):\n        @mark<i, outline, yellow> if (array[i] == target):\n            @mark<i, highlight, green> count += 1\n        end if\n    end for\n    @log<info, \"Count of target\"> return count\nend fun\n\nresult = Count_Occurrences(a1, 2, length(a1))",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "distribution_counting_sort",
+    "code": "// Counting Sort\n\na1 = arr[4, 2, 2, 8, 3, 3, 1]\n\nfun Counting_Sort(@init<table> array):\n    // Create count array for values 0-9\n    count = arr(10, 0)  // Initialize count array with zeros\n    \n    n = length(array)\n    \n    // Count occurrences of each value\n    for (i = 0, i < n, i += 1):\n        @mark<i, outline, yellow> value = array[i]\n        @mark<value, text, fg> count[value] += 1\n    end for\n    \n    // Reconstruct sorted array using counts\n    index = 0\n    for (i = 0, i < 10, i += 1):\n        @mark<i, outline, yellow> while (count[i] > 0):\n            @mark<index, highlight, green> array[index] = i\n            index += 1\n            count[i] -= 1\n        end while\n    end for\n    \n    return array\nend fun\n\nresult = Counting_Sort(a1)",
+    "expected": {
+      "bucket": "invariant_marks_in_bounds",
+      "valid": true,
+      "correct": true,
+      "invariants": false
+    }
+  },
+  {
+    "task": "dutch_national_flag",
+    "code": "// Dutch National Flag Problem\n\na1 = arr[2, 0, 2, 1, 1, 0]\n\nfun Dutch_National_Flag(@init<table> array):\n    n = length(array)\n    \n    // Three pointers: low, mid, high\n    low = 0\n    mid = 0\n    high = n - 1\n    \n    // Process array until mid crosses high\n    while (mid <= high):\n        @mark<mid, outline, yellow> if (array[mid] == 0):\n            // Found 0, swap with low pointer and move both pointers forward\n            @mark<low, highlight, green> swap(array[low], array[mid])\n            low += 1\n            mid += 1\n        else if (array[mid] == 1):\n            // Found 1, leave in place and move mid pointer forward\n            @mark<mid, text, fg> mid += 1\n        else:\n            // Found 2, swap with high pointer and move high pointer backward\n            @mark<high, highlight, green> swap(array[mid], array[high])\n            high -= 1\n        end if\n    end while\n    \n    return array\nend fun\n\nresult = Dutch_National_Flag(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "even_odd_partition",
+    "code": "// Even-Odd Partition\n\na1 = arr[1, 2, 3, 4, 5, 6, 7, 8]\n\nfun Partition_Even_Odd(@init<table> array):\n    // Initialize two pointers\n    left = 0\n    right = length(array) - 1\n\n    // Loop until pointers meet\n    while (left < right):\n        // Move left pointer to find odd number\n        while (left < right):\n            @mark<left, outline, yellow> if (array[left] % 2 == 0):\n                left += 1\n            else:\n                break\n            end if\n        end while\n\n        // Move right pointer to find even number\n        while (left < right):\n            @mark<right, outline, yellow> if (array[right] % 2 == 1):\n                right -= 1\n            else:\n                break\n            end if\n        end while\n\n        // If both pointers found their targets, swap them\n        if (left < right):\n            @mark<left, highlight, green> @mark<right, highlight, green> swap(array[left], array[right])\n            left += 1\n            right -= 1\n        end if\n    end while\n\n    return array\nend fun\n\nresult = Partition_Even_Odd(a1)",
+    "expected": {
+      "bucket": "wrong_result",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "gnome_sort",
+    "code": "// Gnome Sort\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Gnome_Sort(@init<table> array):\n    n = length(array)\n    pos = 0\n\n    while (pos < n):\n        @mark<pos, outline, yellow> if (pos == 0 or array[pos] >= array[pos - 1]):\n            pos += 1\n        else:\n            mark1 = pos - 1\n            @mark<pos, highlight, green> @mark<mark1, highlight, green> swap(array[pos], array[pos - 1])\n            pos -= 1\n        end if\n    end while\n\n    return array\nend fun\n\nresult = Gnome_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "heap_sort",
+    "code": "// Heap Sort\n\na1 = arr[4, 10, 3, 5, 1]\n\nfun Heapify(@init<table> array, n, i):\n    @mark<i, outline, yellow> largest = i   // Initialize largest as root\n    l = 2 * i + 1           // left child index\n    r = 2 * i + 2           // right child index\n\n    @mark<l, outline, yellow> if (l < n and array[l] > array[largest]):\n        @mark<l, highlight, green> largest = l\n    end if\n\n    @mark<r, outline, yellow> if (r < n and array[r] > array[largest]):\n        @mark<r, highlight, green> largest = r\n    end if\n\n    // If largest is not root\n    @mark<i, outline, yellow> if (largest != i):\n        @mark<i, highlight, green> swap(array[i], array[largest])\n        // Recursively heapify the affected sub-tree\n        Heapify(array, n, largest)\n    end if\nend fun\n\nfun Heap_Sort(@init<table> array):\n    n = length(array)\n\n    // Build a max heap\n    for (i = floor(n / 2) - 1; i >= 0; i -= 1):\n        Heapify(array, n, i)\n    end for\n\n    // One by one extract elements from heap\n    for (i = n - 1; i > 0; i -= 1):\n        // Move current root to end\n        @mark<i, highlight, green> swap(array[0], array[i])\n\n        // Call heapify on the reduced heap\n        Heapify(array, i, 0)\n    end for\n\n    return array\nend fun\n\nresult = Heap_Sort(a1)",
+    "expected": {
+      "bucket": "invariant_marks_in_bounds",
+      "valid": true,
+      "correct": true,
+      "invariants": false
+    }
+  },
+  {
+    "task": "hoare_partition",
+    "code": "// Hoare Partition\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Hoare_Partition(@init<table> array, low, high): \n    // choose the pivot - first element of sub-array\n    @mark<low, highlight, yellow> pivot = array[low]\n\n    // initialize pointers i and j outside bounds of loop\n    i = low - 1\n    j = high + 1\n\n    while (true):\n        // move left pointer forward until element >= pivot is found\n        while (true):\n            i += 1\n            @mark<i, outline, yellow> if (array[i] >= pivot or i >= high):\n                break\n            end if\n        end while\n\n        // move right pointer backward until element <= pivot is found\n        while (true):\n            j -= 1\n            @mark<j, outline, yellow> if (array[j] <= pivot or j <= low):\n                break\n            end if\n        end while\n\n        // if pointers cross/meet, then the partition op is completed.\n        if (i >= j):\n            @log<info, \"Partition complete\"> return j\n        end if\n\n        // swap elements at i and j if in the wrong partition\n        @mark<i, highlight, green> swap (array[i], array[j])\n\n    end while\nend fun\n\nresult = Hoare_Partition(a1, 0, length(a1) - 1)",
+    "expected": {
+      "bucket": "wrong_result",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "insertion_sort",
+    "code": "// Insertion Sort\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Insertion_Sort(@init<table> array):\n    n = length(array)\n\n    // Starting from 2nd element (index 1) as the first is assumed sorted\n    for (i = 1, i < n, i += 1):\n        @mark<i, outline, yellow> key = array[i]\n        j = i - 1\n\n        // Compare key with each element on the left of it until smaller element\n        // is found. Shift greater elements to the right to keep sorted order.\n        while ( j >= 0 and key < array[j]):\n            @mark<j, text, fg> array[j + 1] = array[j]\n            j -= 1\n        end while\n\n        // Place key at the right position in sorted sub-array\n        array[j + 1] = key\n    end for\n    return array\nend fun\n\nresult = Insertion_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "interpolation_search",
+    "code": "// Interpolation Search\n\na1 = arr[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n\nfun Interpolation_Search(@init<table> collection, target, size):\n    low = 0\n    high = size - 1\n\n    while (low <= high):\n        // Check for division by zero\n        @mark<low, outline, yellow> if (collection[high] == collection[low]):\n            @mark<low, highlight, red> if (collection[low] == target):\n                @mark<low, highlight, green> return low\n            end if\n            @log<warn, \"Not found\"> return -1\n        end if\n\n        // Calculate probe position using interpolation formula\n        @mark<high, outline, yellow> pos = low + floor(((target - collection[low]) * (high - low)) / (collection[high] - collection[low]))\n\n        // Ensure pos is within bounds\n        @mark<pos, text, fg> if (pos < low or pos > high):\n            @log<warn, \"Not found\"> return -1\n        end if\n\n        // Get value at the probe position\n        @mark<pos, highlight, yellow> val = collection[pos]\n        \n        if (val == target):\n            @mark<pos, highlight, green> return pos\n        end if\n        \n        if (val < target):\n            @mark<low, outline, yellow> low = pos + 1\n        end if\n        \n        if (val > target):\n            @mark<high, outline, yellow> high = pos - 1\n        end if\n    end while\n\n    @log<warn, \"Not found\"> return -1\nend fun\n\nresult = Interpolation_Search(a1, 7, length(a1))",
+    "expected": {
+      "bucket": "invariant_marks_in_bounds",
+      "valid": true,
+      "correct": true,
+      "invariants": false
+    }
+  },
+  {
+    "task": "is_palindrome",
+    "code": "// Palindrome Checker\n\na1 = arr[1, 2, 3, 2, 1]\n\nfun Is_Palindrome(@init<table> array):\n    n = length(array)\n    \n    // Initialize two pointers\n    left = 0\n    right = n - 1\n    \n    // Loop while left pointer is less than right pointer\n    while (left < right):\n        // Compare elements at left and right positions\n        @mark<left, outline, yellow> @mark<right, outline, yellow> if (array[left] != array[right]):\n            @log<info, \"Not a palindrome\"> return 0  // Not a palindrome\n        end if\n        \n        // Move pointers toward center\n        left += 1\n        right -= 1\n    end while\n    \n    @log<info, \"Is a palindrome\"> return 1  // Is a palindrome\nend fun\n\nresult = Is_Palindrome(a1)",
+    "expected": {
+      "bucket": "wrong_result",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "last_occurrence",
+    "code": "// Last Occurrence Search\n\na1 = arr[5, 1, 4, 2, 8, 4, 4]\n\nfun Last_Occurrence_Search(@init<table> array, target):\n    n = length(array)\n    result = -1\n    \n    // Search from end to beginning\n    for (i = n - 1; i >= 0; i -= 1):\n        @mark<i, outline, yellow> if (array[i] == target):\n            @mark<i, highlight, green> result = i\n            @log<\"Found at index \"> return result\n        end if\n    end for\n\n    @log<\"Not found\"> return result\nend fun\n\nresult = Last_Occurrence_Search(a1, 4)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "linear_search",
+    "code": "// Linear Search\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Linear_Search(@init<table> a, k):\n    n = length(a)\n\n    for @mark<i, outline, yellow> (i = 0; i < n; i += 1):\n        @mark<i, text, fg> if (a[i] == k):\n            @mark<i, highlight, green> return i\n        end if\n    end for\n\n    @log<\"Not found: \"> return -1\nend fun\n\nresult = Linear_Search(a1, 4)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "lomuto_partition",
+    "code": "// Lomuto Partition\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Lomuto_Partition(@init<table> array, low, high):\n    // choose the pivot - last element of sub-array\n    @mark<high, highlight, yellow> pivot = array[high]\n\n    // index of smaller element (boundary for elements < pivot)\n    i = low - 1\n\n    for (j = low, j < high, j += 1):\n        // check to see if current element is smaller than pivot\n        @mark<j, outline, yellow> if (array[j] < pivot):\n            i += 1\n            @mark<i, highlight, green> swap (array[i], array[j]) \n        end if\n    end for\n\n    @mark<i, highlight, green> swap (array[i + 1], array[high]) \n\n    return i + 1  // return the high pivot index\n\nend fun\n\nresult = Lomuto_Partition(a1, 0, length(a1) - 1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "lower_bound",
+    "code": "// Binary Search First Greater Or Equal\n\na1 = arr[1, 3, 5, 5, 6, 9]\n\nfun Binary_Search_First_Greater_Or_Equal(@init<table> array, target):\n    left = 0\n    right = length(array) - 1\n    result = length(array) // Default result if no element found\n\n    while (left <= right):\n        mid = floor((left + right) / 2)\n        @mark<mid, outline, yellow> if (array[mid] >= target):\n            @mark<mid, highlight, green> result = mid // Found a candidate\n            right = mid - 1 // Continue searching left half\n        else:\n            left = mid + 1 // Search right half\n        end if\n    end while\n\n    return result\nend fun\n\nresult = Binary_Search_First_Greater_Or_Equal(a1, 5)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "majority_element",
+    "code": "// Majority Element Finder\n\na1 = arr[3, 2, 3]\n\nfun Boyer_Moore_Voting(@init<table> nums, size):\n    candidate = nums[0]\n    count = 1\n    \n    // Phase 1: Find candidate\n    for (i = 1; i < size; i += 1):\n        @mark<i, outline, yellow> if (nums[i] == candidate):\n            @mark<i, highlight, green> count += 1\n        end if\n        \n        @mark<i, outline, yellow> if (nums[i] != candidate):\n            @mark<i, highlight, green> count -= 1\n        end if\n        \n        @mark<i, outline, yellow> if (count == 0):\n            @mark<i, highlight, green> candidate = nums[i]\n            @mark<i, highlight, green> count = 1\n        end if\n    end for\n    \n    return candidate\nend fun\n\nfun Verify_Candidate(@init<table> nums, candidate, size):\n    count = 0\n    \n    // Count occurrences of candidate\n    for (i = 0; i < size; i += 1):\n        @mark<i, outline, yellow> if (nums[i] == candidate):\n            @mark<i, highlight, green> count += 1\n        end if\n    end for\n    \n    // Check if it's majority\n    @mark<count, highlight, green> if (count > floor(size / 2)):\n        @log<info, \"Majority found\"> return candidate\n    end if\n    \n    @log<warn, \"No majority\"> return -1\nend fun\n\nfun Majority_Element(@init<table> nums):\n    size = length(nums)\n    \n    @mark<size, outline, yellow> if (size == 0):\n        @log<error, \"Empty array\"> return -1\n    end if\n    \n    @mark<size, outline, yellow> candidate = Boyer_Moore_Voting(nums, size)\n    @mark<candidate, highlight, green> result = Verify_Candidate(nums, candidate, size)\n    \n    return result\nend fun\n\nresult = Majority_Element(a1)",
+    "expected": {
+      "bucket": "runtime",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "max_element",
+    "code": "// Find_Max\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Find_Max(@init<table> array):\n    n = length(array)\n    @mark<0, outline, yellow> maxVal = array[0] // Initialize max with first element\n    \n    // Iterate through the rest of the array\n    for (i = 1, i < n, i += 1):\n        @mark<i, outline, yellow> if (array[i] > maxVal):\n            @mark<i, highlight, green> maxVal = array[i] // Update max if current element is larger\n        end if\n    end for\n    \n    return maxVal\nend fun\n\nresult = Find_Max(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "max_subarray",
+    "code": "// Maximum Subarray Sum (Kadane's Algorithm)\n\na1 = arr[-2, 1, -3, 4, -1, 2, 1, -5, 4]\n\nfun Max_Subarray_Sum(@init<table> nums):\n    n = length(nums)\n    \n    // Initialize variables to track maximum sum ending at current position\n    // and overall maximum sum seen so far\n    @mark<0, outline, yellow> maxEndingHere = nums[0]\n    @mark<0, highlight, green> maxSoFar = nums[0]\n    \n    // Iterate through the rest of the array\n    for (i = 1; i < n; i += 1):\n        // Either extend the existing subarray or start a new one\n        @mark<i, outline, yellow> if (maxEndingHere + nums[i] > nums[i]):\n            @mark<i, text, fg> maxEndingHere = maxEndingHere + nums[i]\n        else:\n            @mark<i, text, fg> maxEndingHere = nums[i]\n        end if\n        \n        // Update the overall maximum if needed\n        @mark<i, highlight, green> if (maxEndingHere > maxSoFar):\n            @mark<i, text, fg> maxSoFar = maxEndingHere\n        end if\n    end for\n    \n    @log<\"Maximum subarray sum: \"> return maxSoFar\nend fun\n\nresult = Max_Subarray_Sum(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "merge_sort",
+    "code": "// Merge Sort\n\na1 = arr[5, 2, 4, 1, 3]\n\nfun Merge_Sort(@init<table> array):\n    n = length(array)\n    temp = arr(n)  // temporary array for merging\n    Merge_Sort_Helper(array, temp, 0, n - 1)\n    return array\nend fun\n\nfun Merge_Sort_Helper(@init<table> array, @init<table> temp, low, high):\n    if (low < high):\n        mid = floor((low + high) / 2)\n        \n        // Recursively sort first half\n        @mark<mid, outline, yellow> Merge_Sort_Helper(array, temp, low, mid)\n        \n        // Recursively sort second half\n        @mark<mid, outline, yellow> Merge_Sort_Helper(array, temp, mid + 1, high)\n        \n        // Merge the two halves\n        @mark<low, highlight, green> Merge(array, temp, low, mid, high)\n    end if\nend fun\n\nfun Merge(@init<table> array, @init<table> temp, low, mid, high):\n    // Copy data to temporary array\n    for (i = low, i <= high, i += 1):\n        @mark<i, outline, yellow> temp[i] = array[i]\n    end for\n    \n    i = low      // Initial index of first subarray\n    j = mid + 1  // Initial index of second subarray\n    k = low      // Initial index of merged array\n    \n    // Merge the temp arrays back\n    while ((i <= mid) and (j <= high)):\n        @mark<i, outline, yellow> if (temp[i] <= temp[j]):\n            @mark<k, highlight, green> array[k] = temp[i]\n            i += 1\n        else:\n            @mark<k, highlight, green> array[k] = temp[j]\n            j += 1\n        end if\n        k += 1\n    end while\n    \n    // Copy remaining elements of temp[i..mid], if any\n    while (i <= mid):\n        @mark<i, outline, yellow> @mark<k, highlight, green> array[k] = temp[i]\n        i += 1\n        k += 1\n    end while\n    \n    // Copy remaining elements of temp[j..high], if any\n    while (j <= high):\n        @mark<j, outline, yellow> @mark<k, highlight, green> array[k] = temp[j]\n        j += 1\n        k += 1\n    end while\nend fun\n\nresult = Merge_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "min_and_max",
+    "code": "// Find Min Max\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Find_Min_Max(@init<table> array):\n    n = length(array)\n    \n    // Initialize min and max with first element\n    @mark<0, outline, yellow> min = array[0]\n    @mark<0, outline, yellow> max = array[0]\n    \n    // Start from second element since first is already used\n    for (i = 1, i < n, i += 1):\n        @mark<i, outline, yellow> if (array[i] < min):\n            @mark<i, highlight, green> min = array[i]\n        end if\n        \n        @mark<i, outline, yellow> if (array[i] > max):\n            @mark<i, highlight, green> max = array[i]\n        end if\n    end for\n    \n    // Return result as array\n    result = arr[min, max]\n    return result\nend fun\n\nresult = Find_Min_Max(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "move_zeros",
+    "code": "// Move Zeros to End\n\na1 = arr[0, 1, 0, 3, 12]\n\nfun Move_ZerosToEnd(@init<table> array):\n    n = length(array)\n    // Index to place the next non-zero element\n    @mark<0, outline, yellow> writeIndex = 0\n\n    // First pass: move all non-zero elements to the front\n    for (i = 0, i < n, i += 1):\n        @mark<i, outline, yellow> if (array[i] != 0):\n            @mark<i, highlight, green> swap(array[writeIndex], array[i])\n            writeIndex += 1\n        end if\n    end for\n\n    // At this point, all non-zero elements are at the beginning,\n    // and writeIndex points to the first zero position.\n    // Second pass: fill the rest with zeros\n    for (i = writeIndex, i < n, i += 1):\n        @mark<i, outline, yellow> array[i] = 0\n    end for\n\n    return array\nend fun\n\nresult = Move_ZerosToEnd(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "odd_even_sort",
+    "code": "// Odd-Even Transposition Sort\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Odd_Even_Transposition_Sort(@init<table> array):\n    n = length(array)\n    \n    // Continue sorting while the array is not fully sorted\n    sorted = false\n    while (not sorted):\n        sorted = true\n        \n        // Odd phase: compare elements at odd indices\n        for (i = 1; i < n - 1; i += 2):\n            @mark<i, outline, yellow> if (array[i] > array[i + 1]):\n                @mark<i, highlight, green> swap(array[i], array[i + 1])\n                sorted = false\n            end if\n        end for\n\n        // Even phase: compare elements at even indices\n        for (i = 0; i < n - 1; i += 2):\n            @mark<i, outline, yellow> if (array[i] > array[i + 1]):\n                @mark<i, highlight, green> swap(array[i], array[i + 1])\n                sorted = false\n            end if\n        end for\n    end while\n\n    return array\nend fun\n\nresult = Odd_Even_Transposition_Sort(a1)",
+    "expected": {
+      "bucket": "syntax",
+      "valid": false,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "prefix_sums",
+    "code": "// Running Sum\n\na1 = arr[3, 1, 4, 2, 8]\n\nfun Running_Sum(@init<table> array):\n    n = length(array)\n    \n    // Start from second element and accumulate sum\n    for (i = 1, i < n, i += 1):\n        @mark<i, outline, yellow> array[i] = array[i] + array[i - 1]\n    end for\n    \n    return array\nend fun\n\nresult = Running_Sum(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "quick_sort",
+    "code": "// Quick Sort\n\na1 = arr[64, 34, 25, 12, 22, 11, 90]\n\nfun QuickSort(@init<table> array, low, high):\n    if (low < high):\n        // partition the array and get pivot index\n        @mark<low, text, yellow> @mark<high, text, yellow> pi = Lomuto_Partition(array, low, high)\n\n        // recursively sort elements before and after partition\n        @mark<pi, highlight, green> QuickSort(array, low, pi - 1)\n        QuickSort(array, pi + 1, high)\n    end if\nend fun\n\nfun Lomuto_Partition(@init<table> array, low, high): \n    // choose the pivot - last element of sub-array\n    @mark<high, highlight, yellow> pivot = array[high]\n\n    // index of smaller element (boundary for elements < pivot)\n    i = low - 1\n\n    for (j = low, j < high, j += 1):\n        // check to see if current element is smaller than pivot\n        @mark<j, outline, yellow> if (array[j] < pivot):\n            i += 1\n            @mark<i, highlight, green> swap (array[i], array[j]) \n        end if\n    end for\n\n    @mark<i, highlight, green> swap (array[i + 1], array[high]) \n\n    return i + 1  // return the high pivot index\nend fun\n\nresult = QuickSort(a1, 0, length(a1) - 1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "quick_sort_hoare",
+    "code": "// Quick Sort with Hoare Partition\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Hoare_Partition(@init<table> array, low, high): \n    // choose the pivot - first element of sub-array\n    @mark<low, highlight, yellow> pivot = array[low]\n\n    // initialize pointers i and j outside bounds of loop\n    i = low - 1\n    j = high + 1\n\n    while (true):\n        // move left pointer forward until element >= pivot is found\n        while (true):\n            i += 1\n            @mark<i, outline, yellow> if (array[i] >= pivot or i >= high):\n                break\n            end if\n        end while\n\n        // move right pointer backward until element <= pivot is found\n        while (true):\n            j -= 1\n            @mark<j, outline, yellow> if (array[j] <= pivot or j <= low):\n                break\n            end if\n        end while\n\n        // if pointers cross/meet, then the partition op is completed.\n        if (i >= j):\n            @log<info, \"Partition complete\"> return j\n        end if\n\n        // swap elements at i and j if in the wrong partition\n        @mark<i, highlight, green> swap (array[i], array[j])\n\n    end while\nend fun\n\nfun Quick_Sort(@init<table> array, low, high): \n    if (low < high):\n        // partition the array and get pivot index\n        @mark<low, highlight, yellow> pivot_index = Hoare_Partition(array, low, high)\n\n        // recursively sort elements before and after partition\n        Quick_Sort(array, low, pivot_index)\n        Quick_Sort(array, pivot_index + 1, high)\n    end if\n\n    return array\nend fun\n\nresult = Quick_Sort(a1, 0, length(a1) - 1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "quick_sort_lomuto",
+    "code": "// Quick Sort with Lomuto Partition\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Quick_Sort(@init<table> array, low, high):\n    if (low < high):\n        // partition the array and get pivot index\n        @mark<low, highlight, yellow> @mark<high, highlight, yellow> pivot_index = Lomuto_Partition(array, low, high)\n\n        // recursively sort elements before and after partition\n        @mark<pivot_index, highlight, green> Quick_Sort(array, low, pivot_index - 1)\n        Quick_Sort(array, pivot_index + 1, high)\n    end if\n    \n    return array\nend fun\n\nfun Lomuto_Partition(@init<table> array, low, high): \n    // choose the pivot - last element of sub-array\n    @mark<high, highlight, yellow> pivot = array[high]\n\n    // index of smaller element (boundary for elements < pivot)\n    i = low - 1\n\n    for (j = low, j < high, j += 1):\n        // check to see if current element is smaller than pivot\n        @mark<j, outline, yellow> if (array[j] < pivot):\n            i += 1\n            @mark<i, highlight, green> swap (array[i], array[j]) \n        end if\n    end for\n\n    @mark<i, highlight, green> swap (array[i + 1], array[high]) \n\n    return i + 1  // return the high pivot index\n\nend fun\n\nresult = Quick_Sort(a1, 0, length(a1) - 1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "quickselect",
+    "code": "// Quickselect with Lomuto Partitioning\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Lomuto_Partition(@init<table> array, low, high): \n    // choose the pivot - last element of sub-array\n    @mark<high, highlight, yellow> pivot = array[high]\n\n    // index of smaller element (boundary for elements < pivot)\n    i = low - 1\n\n    for (j = low, j < high, j += 1):\n        // check to see if current element is smaller than pivot\n        @mark<j, outline, yellow> if (array[j] < pivot):\n            i += 1\n            @mark<i, highlight, green> swap (array[i], array[j]) \n        end if\n    end for\n\n    @mark<i, highlight, green> swap (array[i + 1], array[high]) \n\n    return i + 1  // return the high pivot index\n\nend fun\n\nfun Quickselect(@init<table> array, low, high, k):\n    // base case: if low equals high, we found our answer\n    if (low == high):\n        @mark<low, highlight, green> return array[low]\n    end if\n\n    // partition the array and get the pivot index\n    @mark<low, outline, yellow> @mark<high, outline, yellow> pivot_index = Lomuto_Partition(array, low, high)\n\n    // if the pivot is the k-th smallest element, return it\n    if (pivot_index == k - 1):\n        @mark<pivot_index, highlight, green> return array[pivot_index]\n    else if (k - 1 < pivot_index):\n        // recurse on the left subarray\n        @mark<pivot_index, outline, yellow> return Quickselect(array, low, pivot_index - 1, k)\n    else:\n        // recurse on the right subarray\n        @mark<pivot_index, outline, yellow> return Quickselect(array, pivot_index + 1, high, k)\n    end if\n\nend fun\n\nresult = Quickselect(a1, 0, length(a1) - 1, 3)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "remove_duplicates_sorted",
+    "code": "// Remove Duplicates from Sorted Array\n\na1 = arr[1, 1, 2, 2, 3, 4, 4, 5]\n\nfun Remove_Duplicates(@init<table> array):\n    n = length(array)\n    \n    // Handle edge case of empty array\n    if (n == 0):\n        return 0\n    end if\n    \n    // Index for placing unique elements\n    @mark<write_idx, outline, yellow> write_idx = 1\n    \n    // Iterate through array starting from second element\n    for (i = 1; i < n; i += 1):\n        // If current element is different from previous\n        @mark<i, outline, yellow> if (array[i] != array[i - 1]):\n            // Place it at write index\n            @mark<write_idx, highlight, green> array[write_idx] = array[i]\n            // Increment write index\n            write_idx += 1\n        end if\n    end for\n    \n    // Return count of unique elements\n    return write_idx\nend fun\n\nresult = Remove_Duplicates(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "reverse_array",
+    "code": "// Array Reversal\n\na1 = arr[1, 2, 3, 4, 5]\n\nfun Reverse_Array(@init<table> array):\n    // Initialize two pointers: one at start, one at end\n    left = 0\n    right = length(array) - 1\n\n    // Continue swapping while left pointer is less than right pointer\n    while (left < right):\n        // Swap elements at left and right positions\n        @mark<left, highlight, green> @mark<right, highlight, green> swap(array[left], array[right])\n\n        // Move pointers towards each other\n        left += 1\n        right -= 1\n    end while\n\n    return array\nend fun\n\nresult = Reverse_Array(a1)",
+    "expected": {
+      "bucket": "invariant_cursor_unmarked",
+      "valid": true,
+      "correct": true,
+      "invariants": false
+    }
+  },
+  {
+    "task": "rotate_left",
+    "code": "// Rotate Array Left by K Positions\n\na1 = arr[1, 2, 3, 4, 5, 6, 7]\n\nfun Reverse(@init<table> array, low, high):\n    // Reverse elements from index low to high\n    while (low < high):\n        @mark<low, outline, yellow> @mark<high, outline, yellow> swap(array[low], array[high])\n        low += 1\n        high -= 1\n    end while\nend fun\n\nfun Rotate_Left(@init<table> array, k):\n    n = length(array)\n    \n    // Handle cases where k is larger than array size\n    k = k % n\n    \n    // No rotation needed\n    if (k == 0):\n        @log<\"No rotation needed\"> return array\n    end if\n    \n    // Step 1: Reverse entire array\n    @mark<n, highlight, green> Reverse(array, 0, n - 1)\n    \n    // Step 2: Reverse first k elements\n    @mark<k, highlight, green> Reverse(array, 0, k - 1)\n    \n    // Step 3: Reverse remaining n-k elements\n    @mark<k, highlight, green> Reverse(array, k, n - 1)\n    \n    return array\nend fun\n\nresult = Rotate_Left(a1, 3)",
+    "expected": {
+      "bucket": "wrong_result",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  },
+  {
+    "task": "selection_sort",
+    "code": "// Selection Sort\n\na1 = arr[64, 34, 25, 12, 22, 11, 90]\n\nfun Selection_Sort(@init<table> array):\n    n = length(array)\n\n    // Outer loop: iterate thru all index positions except the last\n    for (i = 0, i < n - 1, i += 1):\n        // assume the current index position holds min element\n        @mark<i, outline, yellow> minIdx = i\n\n        // Inner loop: find actual minimum element in remaining\n        // unsorted portion of array\n        for (j = i + 1, j < n, j += 1):\n            @mark<j, outline, yellow> if (array[j] < array[minIdx]):\n                @mark<j, text, fg> minIdx = j; // new minimum value index found\n            end if\n        end for\n\n        // Swap Values when a smaller value is encountered\n        @mark<minIdx, highlight, green> swap(array[i], array[minIdx])\n    end for\n\n    return array\nend fun\n\nresult = Selection_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "selection_sort_descending",
+    "code": "// Selection Sort Descending\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Selection_Sort_Desc(@init<table> array): \n    n = length(array)\n\n    // Outer loop: iterate thru all index positions except the last\n    for (i = 0, i < n - 1, i += 1):\n        // assume the current index position holds max element\n        @mark<i, outline, yellow> maxIdx = i\n\n        // Inner loop: find actual maximum element in remaining\n        // unsorted portion of array\n        for (j = i + 1, j < n, j += 1):\n            @mark<j, outline, yellow> if (array[j] > array[maxIdx]):\n                @mark<j, text, fg> maxIdx = j; // new maximum value index found\n            end if\n        end for\n\n        // Swap Values when a larger value is encountered\n        @mark<maxIdx, highlight, green> swap(array[i], array[maxIdx])\n    end for\n\n    return array\nend fun\n\nresult = Selection_Sort_Desc(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "shell_sort",
+    "code": "// Shell Sort\n\na1 = arr[64, 34, 25, 12, 22, 11, 90]\n\nfun Shell_Sort(@init<table> array):\n    n = length(array)\n    \n    // Start with a large gap, then reduce the gap\n    gap = floor(n / 2)\n    \n    // Continue until gap becomes 0\n    while (gap > 0):\n        // Do a gapped insertion sort for this gap size\n        for (i = gap, i < n, i += 1):\n            @mark<i, outline, yellow> temp = array[i]\n            \n            // Shift earlier gap-sorted elements up until the correct location for array[i] is found\n            j = i\n            while (j >= gap and array[j - gap] > temp):\n                @mark<j, highlight, green> array[j] = array[j - gap]\n                j -= gap\n            end while\n            \n            // Put temp (the original array[i]) in its correct location\n            @mark<j, text, fg> array[j] = temp\n        end for\n        \n        // Reduce the gap for the next iteration\n        gap = floor(gap / 2)\n    end while\n    \n    return array\nend fun\n\nresult = Shell_Sort(a1)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "sum_array",
+    "code": "// Sum Array\n\na1 = arr[5, 1, 4, 2, 8]\n\nfun Sum_Array(@init<table> numbers):\n    total = 0\n\n    // Iterate through the numbers array\n    for n in numbers:\n        @mark<total, text, fg> total = total + n\n    end for\n\n    return total\nend fun\n\nresult = Sum_Array(a1)",
+    "expected": {
+      "bucket": "invariant_marks_in_bounds",
+      "valid": true,
+      "correct": true,
+      "invariants": false
+    }
+  },
+  {
+    "task": "two_sum_sorted",
+    "code": "// Two Sum in Sorted Array\n\na1 = arr[2, 7, 11, 15]\n\nfun Two_Sum(@init<table> array, target):\n    // Initialize two pointers at the start and end of the array\n    left = 0\n    right = length(array) - 1\n\n    // Loop while the pointers haven't met\n    while (left < right):\n        // Calculate the sum of values at the two pointers\n        @mark<left, outline, yellow> @mark<right, outline, yellow> current_sum = array[left] + array[right]\n\n        // If we found the target sum, return the indices\n        if (current_sum == target):\n            @log<info, \"Pair found\"> result = arr[left, right]\n            return result\n        end if\n\n        // If the current sum is less than target, move left pointer right\n        if (current_sum < target):\n            @mark<left, highlight, green> left += 1\n        else:\n            // Otherwise, move right pointer left\n            @mark<right, highlight, green> right -= 1\n        end if\n    end while\n\n    // No pair found, return [-1, -1]\n    @log<info, \"No pair found\"> result = arr[-1, -1]\n    return result\nend fun\n\nresult = Two_Sum(a1, 9)",
+    "expected": {
+      "bucket": "pass",
+      "valid": true,
+      "correct": true,
+      "invariants": true
+    }
+  },
+  {
+    "task": "unique_elements",
+    "code": "// Check Unique Elements\n\na1 = arr[3, 1, 4, 2, 8, 5]\n\nfun check_unique(@init<table> array):\n    n = length(array)\n\n    for @mark<i, outline, yellow> (i = 0; i < n; i += 1):\n        for @mark<j, outline, yellow> (j = i + 1; j < n; j += 1):\n            if (array[i] == array[j]):\n                @mark<i, highlight, green> return 0  // Duplicate found\n            end if\n        end for\n    end for\n\n    return 1  // No duplicates found\nend fun\n\nresult = check_unique(a1)",
+    "expected": {
+      "bucket": "wrong_result",
+      "valid": true,
+      "correct": false,
+      "invariants": false
+    }
+  }
+]

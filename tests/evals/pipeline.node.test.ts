@@ -55,7 +55,7 @@ describe('runPipeline', () => {
     expect(ours.final).toBe(app.code);
     expect(ours.finalProblems).toEqual(app.problems);
     // Same requests, plus the eval-only switches
-    expect(model.requests.map(({ rag: _, k: __, ...r }) => r)).toEqual(appRequests);
+    expect(model.requests.map(({ rag: _, k: __, grammar: ___, ...r }) => r)).toEqual(appRequests);
   });
 
   it('keeps every intermediate output', async () => {
@@ -82,6 +82,10 @@ describe('runPipeline', () => {
     const noRag = scripted([Fixed]);
     await runPipeline('q', Configs.no_rag, noRag.generate);
     expect(noRag.requests[0].rag).toBe(false);
+
+    const constrained = scripted([Fixed]);
+    await runPipeline('q', Configs.local_grammar, constrained.generate);
+    expect(constrained.requests[0].grammar).toBe(true);
   });
 
   it('keeps the first attempt when the repair call fails', async () => {

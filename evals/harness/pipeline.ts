@@ -16,14 +16,20 @@ export type PipelineConfig = {
   instructions: boolean
   rag: boolean
   k: number
+  /** Constrain decoding to evals/avp.gbnf (eval server with LLM_PROVIDER=vllm) */
+  grammar: boolean
 };
 
 export const Configs: Record<string, PipelineConfig> = {
-  baseline: { name: 'baseline', autofix: true, repairs: Globals.AIRepairAttempts, instructions: true, rag: true, k: 2 },
-  no_rag: { name: 'no_rag', autofix: true, repairs: Globals.AIRepairAttempts, instructions: true, rag: false, k: 2 },
-  no_instructions: { name: 'no_instructions', autofix: true, repairs: Globals.AIRepairAttempts, instructions: false, rag: true, k: 2 },
-  no_autofix: { name: 'no_autofix', autofix: false, repairs: Globals.AIRepairAttempts, instructions: true, rag: true, k: 2 },
-  no_repair: { name: 'no_repair', autofix: true, repairs: 0, instructions: true, rag: true, k: 2 },
+  baseline: { name: 'baseline', autofix: true, repairs: Globals.AIRepairAttempts, instructions: true, rag: true, k: 2, grammar: false },
+  no_rag: { name: 'no_rag', autofix: true, repairs: Globals.AIRepairAttempts, instructions: true, rag: false, k: 2, grammar: false },
+  no_instructions: { name: 'no_instructions', autofix: true, repairs: Globals.AIRepairAttempts, instructions: false, rag: true, k: 2, grammar: false },
+  no_autofix: { name: 'no_autofix', autofix: false, repairs: Globals.AIRepairAttempts, instructions: true, rag: true, k: 2, grammar: false },
+  no_repair: { name: 'no_repair', autofix: true, repairs: 0, instructions: true, rag: true, k: 2, grammar: false },
+  // The constrained-decoding A/B, against a local vLLM server
+  local: { name: 'local', autofix: true, repairs: Globals.AIRepairAttempts, instructions: true, rag: true, k: 2, grammar: false },
+  local_grammar: { name: 'local_grammar', autofix: true, repairs: Globals.AIRepairAttempts, instructions: true, rag: true, k: 2, grammar: true },
+  local_grammar_only: { name: 'local_grammar_only', autofix: false, repairs: 0, instructions: true, rag: true, k: 2, grammar: true },
 };
 
 /** What the eval server returns for one call. */
@@ -37,7 +43,9 @@ export type CallRecord = {
   temperature: number
 };
 
-export type Generate = (req: TutorRequest & { rag: boolean, k: number }) => Promise<CallRecord>;
+export type Generate = (
+  req: TutorRequest & { rag: boolean, k: number, grammar: boolean },
+) => Promise<CallRecord>;
 
 /** Calls the eval server (avp_rag_system: uvicorn evals.server:app). */
 export function serverGenerate(baseUrl: string): Generate {
@@ -89,7 +97,7 @@ export async function runPipeline(
   };
 
   const calls: CallRecord[] = [];
-  const first = await generate({ ...req, rag: config.rag, k: config.k });
+  const first = await generate({ ...req, rag: config.rag, k: config.k, grammar: config.grammar });
   calls.push(first);
   const result: PipelineResult = {
     raw: first.generated_code,
@@ -113,7 +121,7 @@ export async function runPipeline(
     result.repairAttempted = true;
     let fixed: string;
     try {
-      const call = await generate({ ...buildRepairRequest(req, code, problems), rag: config.rag, k: config.k });
+      const call = await generate({ ...buildRepairRequest(req, code, problems), rag: config.rag, k: config.k, grammar: config.grammar });
       calls.push(call);
       result.repairRaw = call.generated_code;
       fixed = clean(call.generated_code);
