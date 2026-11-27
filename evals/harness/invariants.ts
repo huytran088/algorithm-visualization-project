@@ -89,11 +89,11 @@ export function unmarkedCursors(source: string) {
   const subscripts = new Set(
     [...code.matchAll(/\b[A-Za-z_]\w*\s*\[\s*([A-Za-z_]\w*)\s*\]/g)].map(m => m[1]),
   );
-  // The interpreter drops directives on if/else/break/continue lines, so a
-  // mark there never shows (TraceInterpreterVisitor.visitIfStatement)
+  // The interpreter ignores directives on break/continue, so a mark there
+  // never shows
   const marked = new Set(
     [...withMarks.matchAll(/@mark\s*<\s*([A-Za-z_]\w*)[^>]*>((?:\s*@\w+\s*<[^>]*>)*)\s*([A-Za-z_]\w*)?/g)]
-      .filter(m => !['if', 'else', 'break', 'continue'].includes(m[3] ?? ''))
+      .filter(m => !['break', 'continue'].includes(m[3] ?? ''))
       .map(m => m[1]),
   );
   return [...cursors].filter(c => subscripts.has(c) && !marked.has(c)).sort();

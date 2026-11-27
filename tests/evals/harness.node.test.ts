@@ -149,10 +149,14 @@ describe('invariants', () => {
     expect(unmarkedCursors(Bubble.replace('@mark<j, outline, yellow> ', ''))).toEqual(['j']);
     // A directive between for and its condition
     expect(unmarkedCursors(kb('check_unique'))).toEqual([]);
-    // A mark on an if line is dropped by the interpreter, so it doesn't count
+    // A mark on an if line counts (the interpreter applies it)
     const onIf = Bubble.replace('for @mark<j, outline, yellow> (', 'for (')
       .replace('if (array[j]', '@mark<j, outline, yellow> @mark<j, text, red> if (array[j]');
-    expect(unmarkedCursors(onIf)).toEqual(['j']);
+    expect(unmarkedCursors(onIf)).toEqual([]);
+    // One on break or continue doesn't
+    const onBreak = Bubble.replace('for @mark<j, outline, yellow> (', 'for (')
+      .replace('swap(array[j], array[j + 1])', 'swap(array[j], array[j + 1])\n                @mark<j, outline, yellow> break');
+    expect(unmarkedCursors(onBreak)).toEqual(['j']);
   });
 });
 

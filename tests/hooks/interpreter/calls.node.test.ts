@@ -252,3 +252,41 @@ r = Run(a1)
     expect(actions(src, 'vis_init').map(a => a.params.data)).toEqual([[1, 2]]);
   });
 });
+
+describe('directives on if statements', () => {
+  const program = (stmt: string) => `fun F(@init<table> a):
+    for (j = 0; j < 2; j += 1):
+        ${stmt}
+    end for
+    return a
+end fun
+
+x = arr[1, 2, 3]
+result = F(x)`;
+
+  const redMarks = (source: string) =>
+    actions(source, 'vis_mark').filter(a => a.params.color === 'red');
+
+  it('draws a mark written before if, like one before while', () => {
+    const onIf = program('@mark<j, highlight, red> if (j >= 0):\n            k = 1\n        end if');
+    expect(redMarks(onIf).map(a => a.params.index)).toEqual([0, 1]);
+  });
+
+  it('draws it once per if, even with else if branches', () => {
+    const chain = program([
+      '@mark<j, highlight, red> if (j > 5):',
+      '            k = 1',
+      '        else if (j > 4):',
+      '            k = 2',
+      '        else:',
+      '            k = 3',
+      '        end if',
+    ].join('\n'));
+    expect(redMarks(chain)).toHaveLength(2);
+  });
+
+  it('applies other directives too, such as @log', () => {
+    const logged = program('@log<info, "check"> if (j == 1):\n            k = 1\n        end if');
+    expect(actions(logged, 'vis_log').filter(a => a.params.text === 'check')).toHaveLength(2);
+  });
+});
