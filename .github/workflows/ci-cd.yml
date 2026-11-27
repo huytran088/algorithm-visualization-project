@@ -64,8 +64,15 @@ jobs:
       - run: npm ci
       - name: Generate ANTLR parser
         run: npm run build-g4
+      # The runner image ships a packages.microsoft.com apt source that
+      # Playwright doesn't need; when it returns 403, `apt-get update` fails
+      # the whole install. Drop it, and retry once for other mirror blips.
+      - name: Remove unneeded apt sources
+        run: sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list /etc/apt/sources.list.d/microsoft-prod.sources
       - name: Install Playwright browser
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: |
+          npx playwright install --with-deps ${{ matrix.browser }} ||
+            (sleep 15 && npx playwright install --with-deps ${{ matrix.browser }})
       - name: Browser tests
         run: npx vitest run --project browser --browser=${{ matrix.browser }}
 
