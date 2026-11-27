@@ -8,6 +8,8 @@ import { Editor } from '@monaco-editor/react';
 
 import Defs from '../defs';
 
+import { type ProblemMarker } from '../hooks/useSourceProblems';
+
 import DarkModeContext from '../contexts/DarkModeContext';
 
 /**
@@ -28,6 +30,8 @@ import DarkModeContext from '../contexts/DarkModeContext';
  *        The line ranges to grey out
  * @param {boolean} props.editing
  *        Whether the editor is in editing mode
+ * @param {ProblemMarker[]} [props.markers]
+ *        Problems to underline in the code (errors red, warnings yellow)
  * @param {boolean} props.bindSrc
  *        Whether the editor's value should be bound to the source state
  */
@@ -40,6 +44,7 @@ export default function Monaco(
     greyouts,
     editing,
     bindSrc,
+    markers = [],
   }:
   {
     name: string
@@ -49,6 +54,7 @@ export default function Monaco(
     greyouts: (number | [number, number] | null)[]
     editing: boolean
     bindSrc: boolean
+    markers?: ProblemMarker[]
   },
 ) {
   const isDark = useContext(DarkModeContext);
@@ -114,6 +120,20 @@ export default function Monaco(
       );
     }
   }, [highlights, greyouts, monaco, isDark]);
+
+  useEffect(() => {
+    if (monaco === null) return;
+    const model = monaco[0].getModel();
+    if (!model) return;
+
+    const { MarkerSeverity } = monaco[1];
+    monaco[1].editor.setModelMarkers(model, 'avp', markers.map(m => ({
+      ...m,
+      severity: m.severity === 'error' ?
+        MarkerSeverity.Error :
+        MarkerSeverity.Warning,
+    })));
+  }, [markers, monaco, src]);
 
   useEffect(() => {
     if (monaco === null) return;
