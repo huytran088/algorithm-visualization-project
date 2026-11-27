@@ -89,3 +89,65 @@ m = max(x)
     );
   });
 });
+
+describe('interpreter: visualized array', () => {
+  it('initializes the table once when recursing on the same array', () => {
+    expect(actions(QuickSort, 'vis_init')).toHaveLength(1);
+  });
+
+  it('does not let a helper\'s temporary array replace the table', () => {
+    const src = `a1 = arr[4, 3, 2, 1]
+
+fun Copy_Half(tmp):
+    tmp[0] = 9
+    return tmp
+end fun
+
+fun Run(@init<table> array):
+    half = arr(2, 0)
+    Copy_Half(half)
+    return array
+end fun
+
+result = Run(a1)
+`;
+    const inits = actions(src, 'vis_init');
+    expect(inits).toHaveLength(1);
+    expect(inits[0].params.data).toEqual([4, 3, 2, 1]);
+  });
+
+  it('only draws writes to the visualized array', () => {
+    const src = `a1 = arr[5, 6, 7]
+
+fun Run(@init<table> array):
+    count = arr(3, 0)
+    count[1] = 42
+    array[2] = 8
+    return array
+end fun
+
+result = Run(a1)
+`;
+    expect(actions(src, 'vis_update')).toEqual([
+      { cmd: 'vis_update', params: { index: 2, value: 8 } },
+    ]);
+  });
+
+  it('only draws swaps on the visualized array', () => {
+    const src = `a1 = arr[5, 6, 7]
+
+fun Run(@init<table> array):
+    other = arr[1, 2, 3]
+    swap(other[0], other[1])
+    swap(array[0], array[2])
+    return array
+end fun
+
+result = Run(a1)
+`;
+    expect(actions(src, 'vis_swap')).toEqual([
+      { cmd: 'vis_swap', params: { index: 0, index2: 2 } },
+    ]);
+    expect(finalValue(src, 'result')).toEqual([7, 6, 5]);
+  });
+});

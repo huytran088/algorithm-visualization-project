@@ -54,6 +54,10 @@ export default class TraceInterpreterVisitor
 
   private lastFlushedMarkedIndices: number[] = [];
 
+  // The array shown in the table. Marks, updates and swaps are only drawn for
+  // this array (compared by reference, so aliases like a1/array match).
+  private visualized: any[] | null = null;
+
   protected defaultResult(): any {
     return null;
   }
@@ -271,9 +275,15 @@ export default class TraceInterpreterVisitor
         // FIX 1: Extract metadata AFTER updating memory!
         const metadataActions = this.extractMetadataActions(ctx);
 
+        // Writes to other arrays (counts, temporaries) only show in Vars
+        const drawn: TraceAction[] = arr === this.visualized ?
+          [
+            { cmd: 'vis_mark', params: { index, type: 'highlight', color: 'green' } },
+            { cmd: 'vis_update', params: { index, value } },
+          ] :
+          [];
         const actions: TraceAction[] = [...metadataActions,
-          { cmd: 'vis_mark', params: { index, type: 'highlight', color: 'green' } },
-          { cmd: 'vis_update', params: { index, value } },
+          ...drawn,
           { cmd: 'var_add', params: { name, value: [...arr] } },
         ];
         this.addStep(ctx.start!.line, actions);
@@ -288,6 +298,7 @@ export default class TraceInterpreterVisitor
     metadataActions.forEach((action) => {
       if (action.cmd === 'vis_init') {
         action.params.data = snapshotValue;
+        if (Array.isArray(value)) this.visualized = value;
       }
     });
 
@@ -373,7 +384,7 @@ export default class TraceInterpreterVisitor
             arr2[ref2.index] = temp;
             this.clearFlushedMarks();
 
-            if (ref1.arrayName === ref2.arrayName) {
+            if (arr1 === arr2 && arr1 === this.visualized) {
               this.addStep(ctx.start!.line, [
                 { cmd: 'var_add', params: { name: ref1.arrayName, value: [...arr1] } },
                 { cmd: 'vis_mark', params: { index: ref1.index, type: 'highlight', color: 'green' } },
@@ -381,15 +392,25 @@ export default class TraceInterpreterVisitor
                 { cmd: 'vis_swap', params: { index: ref1.index, index2: ref2.index } },
               ]);
             } else {
-              this.addStep(ctx.start!.line, [
+              // Not (only) the visualized array: update Vars, and redraw
+              // just the cell of the visualized array that changed, if any
+              const swapActions: TraceAction[] = [
                 { cmd: 'var_add', params: { name: ref1.arrayName, value: [...arr1] } },
-                { cmd: 'var_add', params: { name: ref2.arrayName, value: [...arr2] } },
-                { cmd: 'vis_mark', params: { index: ref1.index, type: 'highlight', color: 'green' } },
-                { cmd: 'vis_mark', params: { index: ref2.index, type: 'highlight', color: 'green' } },
-                { cmd: 'vis_swap', params: { index: ref1.index, index2: ref2.index } },
-              ]);
+              ];
+              if (arr2 !== arr1) {
+                swapActions.push({ cmd: 'var_add', params: { name: ref2.arrayName, value: [...arr2] } });
+              }
+              for (const [arr, index] of [[arr1, ref1.index], [arr2, ref2.index]] as const) {
+                if (arr === this.visualized && arr1 !== arr2) {
+                  swapActions.push(
+                    { cmd: 'vis_mark', params: { index, type: 'highlight', color: 'green' } },
+                    { cmd: 'vis_update', params: { index, value: arr[index] } },
+                  );
+                }
+              }
+              this.addStep(ctx.start!.line, swapActions);
             }
-            return;
+            return null;
           }
         }
       }
@@ -429,14 +450,20 @@ export default class TraceInterpreterVisitor
         for (const meta of metaList) {
           const action = this.processMetadata(meta);
           if (action && action.cmd === 'vis_init') {
+            hasInit = true;
+            // Recursing on the array already shown must not reset the table
+            if (Array.isArray(val) && val === this.visualized) continue;
             action.params.data = snapshotVal;
             initActions.push(action);
-            hasInit = true;
+            if (Array.isArray(val)) this.visualized = val;
           }
         }
       }
-      if (!hasInit && Array.isArray(val)) {
+      // Without @init, only show an array when nothing is shown yet, so a
+      // helper's temporary array can't replace the table
+      if (!hasInit && Array.isArray(val) && this.visualized === null) {
         initActions.push({ cmd: 'vis_init', params: { data: snapshotVal, type: 'table' } });
+        this.visualized = val;
       }
     });
 
@@ -760,8 +787,11 @@ export default class TraceInterpreterVisitor
     const index = Math.floor(this.visit(ctx.expression()!));
     this.isReferenceMode = prevRefMode;
 
-    this.recentArrayAccesses.push({ index, arrayName });
-    if (this.recentArrayAccesses.length > 5) this.recentArrayAccesses.shift();
+    // Automatic marks only make sense for cells of the visualized array
+    if (this.memory.get(arrayName) === this.visualized) {
+      this.recentArrayAccesses.push({ index, arrayName });
+      if (this.recentArrayAccesses.length > 5) this.recentArrayAccesses.shift();
+    }
 
     if (this.isReferenceMode) {
       this.isReferenceMode = false; // consume it safely
