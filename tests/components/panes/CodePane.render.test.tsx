@@ -3,10 +3,10 @@ import { expect, test, describe } from 'vitest';
 
 import CodePane from '../../../app/components/panes/CodePane';
 
-function Test() {
+function Test({ src = 'test' }: { src?: string }) {
   return (
     <CodePane
-      src="test"
+      src={src}
       setSrc={() => {}}
       highlight={1}
       editing={false}
@@ -36,5 +36,25 @@ describe('Test component: <CodePane />', async () => {
     await expect(screen.baseElement.querySelector('script[src*="monaco-editor"]')).toBeInTheDocument();
 
     // Cannot test more than this due to Monaco's limitations
+
+    // Syntax errors are listed under the editor (checked from the code, so
+    // this doesn't depend on Monaco rendering). Monaco has its own role=alert
+    // regions, hence the id.
+    const problems = () => screen.baseElement.querySelector('#codeProblems');
+    await expect(problems()).toBeNull();
+
+    await screen.rerender(<Test src={'a1 = arr[3, 1, 2]\nx = (1 +\n'} />);
+    await expect.poll(problems).not.toBeNull();
+    const alert = problems()!;
+    await expect(alert.getAttribute('role')).toBe('alert');
+    await expect(alert).toHaveTextContent(/^Line 2/);
+
+    // Two runtime errors (code with a syntax error is not run)
+    await screen.rerender(<Test src={'a1 = arr[3, 1, 2]\nm = max(a1)\nn = min(a1)\n'} />);
+    await expect.poll(() => problems()?.textContent)
+      .toMatch(/^Line 2: Unknown function 'max'.* \(\+1 more\)$/);
+
+    await screen.rerender(<Test src={'x = 1\n'} />);
+    await expect.poll(problems).toBeNull();
   });
 });

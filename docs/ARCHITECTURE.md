@@ -168,6 +168,19 @@ UI preferences are stored in `localStorage`:
 
 Nothing is sent to a server except AI prompts.
 
+### Code problems
+
+`CodePane` checks its code live, while editing and before **Save**, with
+`useSourceProblems`: 300 ms after the last change it runs `checkSource`
+(`interpreter/validate.ts`), the same grammar and `TraceInterpreterVisitor` the
+visualizer uses. Problems have a kind: `syntax` (won't parse, with ANTLR's
+line and column plus plain explanations of directive and array-literal
+mistakes), `runtime` (throws, or the interpreter logs an error, on the line
+that ran) and `hint` (no top-level call, no array visualized). Monaco
+underlines them through the `markers` prop (errors red, hints yellow), and
+syntax and runtime errors are listed in a bar under the code
+(`#codeProblems`). The AI Tutor uses the same check through `validateSource`.
+
 ### AI Tutor
 
 The AI Tutor is implemented by `AIPane` and the `useAITutor` hook. The hook

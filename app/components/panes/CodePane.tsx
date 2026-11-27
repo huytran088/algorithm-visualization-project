@@ -1,3 +1,7 @@
+import {
+  useMemo,
+} from 'react';
+
 import Monaco from '../Monaco';
 
 import { IconButton } from '@material-tailwind/react';
@@ -9,6 +13,9 @@ import {
 } from 'iconoir-react';
 
 import usePortrait from '../../hooks/usePortrait';
+import useSourceProblems, {
+  problemMarkers,
+} from '../../hooks/useSourceProblems';
 
 /**
  * Renders the code pane for the visualizer.
@@ -51,6 +58,12 @@ export default function CodePane(
   },
 ) {
   const [portrait] = usePortrait();
+
+  // Checked live (also while editing, before Save) with the real grammar and
+  // interpreter. Errors are listed below the code; hints are only underlined.
+  const problems = useSourceProblems(src);
+  const markers = useMemo(() => problemMarkers(problems), [problems]);
+  const errors = problems.filter(p => p.kind !== 'hint');
 
   return (
     <>
@@ -98,7 +111,7 @@ export default function CodePane(
           (<></>)
       }
       <div
-        className="w-full h-full"
+        className="relative w-full h-full"
         onDoubleClick={() => {
           if (!editing) setEditing(true);
         }}
@@ -111,9 +124,34 @@ export default function CodePane(
           greyouts={[]}
           editing={editing}
           bindSrc={false}
+          markers={markers}
         />
+        {
+          errors.length > 0 ?
+            (
+              <div
+                id="codeProblems"
+                role="alert"
+                className="absolute bottom-0 left-0 right-0 z-10 px-3 py-1.5 text-sm truncate border-t border-[crimson]/40 bg-[crimson]/10 text-[crimson] dark:text-[#ff6b81]"
+                title={errors.map(problemText).join('\n')}
+              >
+                {problemText(errors[0])}
+                {errors.length > 1 ? ` (+${errors.length - 1} more)` : ''}
+              </div>
+            ) :
+            (<></>)
+        }
       </div>
       <pre id="sourceCode" className="hidden">{src}</pre>
     </>
   );
+}
+
+/**
+ * One-line text for a problem: "Line 4: message", or the message alone.
+ */
+function problemText(problem: { line: number | undefined, message: string }) {
+  return problem.line === undefined ?
+    problem.message :
+    `Line ${problem.line}: ${problem.message}`;
 }
