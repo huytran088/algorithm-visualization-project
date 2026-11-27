@@ -682,9 +682,11 @@ export default class TraceInterpreterVisitor
     const expressions = ctx.expression();
     const blocks = ctx.block();
     let matchedBlockIndex = -1;
+    // Directives written before the if apply once, with its first condition
+    const metadataActions = this.extractMetadataActions(ctx);
     for (let i = 0; i < expressions.length; i++) {
       const condition = this.visit(expressions[i]);
-      this.flushComparisons(ctx.start!.line, []);
+      this.flushComparisons(ctx.start!.line, i === 0 ? metadataActions : []);
       if (condition) {
         matchedBlockIndex = i;
         break;

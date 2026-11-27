@@ -55,6 +55,7 @@
     "antlr4ng": "^3.0.16",
     "eslint": "^10.2.1",
     "eslint-plugin-react": "^7.37.5",
+    "fast-check": "^4.11.0",
     "globals": "^17.5.0",
     "npm-check-updates": "^21.0.3",
     "rimraf": "^6.1.3",
