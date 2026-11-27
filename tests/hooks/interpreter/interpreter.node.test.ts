@@ -95,4 +95,24 @@ end for
 `;
     expect(new TsInterpreterVisitor().visit(parse(src))).toContain('continue;');
   });
+
+  it('supports an empty array literal', () => {
+    expect(finalValue('a = arr[]\n', 'a')).toEqual([]);
+    expect(finalValue('a = arr[\n]\nn = length(a)\n', 'n')).toBe(0);
+    expect(new TsInterpreterVisitor().visit(parse('a = arr[]\n')))
+      .toContain('a = []');
+  });
+
+  it('returns an empty array as a "not found" result', () => {
+    // From a real AI Tutor generation (two-pointer two sum)
+    const src = `fun Find(a):
+    pair = arr[]
+    return pair
+end fun
+
+a1 = arr[1, 2]
+result = Find(a1)
+`;
+    expect(finalValue(src, 'result')).toEqual([]);
+  });
 });

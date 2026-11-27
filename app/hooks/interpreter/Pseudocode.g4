@@ -27,7 +27,7 @@ assignable      : ID | ID LBRACK expression RBRACK ;
 arrayInitialization
     : ARR LBRACK NL* from=expression TO NL* to=expression NL* RBRACK               # RangeArray
     | ARR LPAREN NL* size=expression (COMMA NL* defaultVal=expression)? NL* RPAREN # SizeArray
-    | ARR LBRACK NL* expressionList NL* RBRACK                                      # ValueArray
+    | ARR LBRACK NL* expressionList? NL* RBRACK                                     # ValueArray
     ;
 
 // Metadata integration for variables, functions, and loops

@@ -118,7 +118,8 @@ export default class TsInterpreterVisitor
   }
 
   visitValueArray(ctx: ValueArrayContext): string {
-    const elements = this.visit(ctx.expressionList()!);
+    const list = ctx.expressionList();
+    const elements = list ? this.visit(list) : '';
     return `[${elements}]`;
   }
 

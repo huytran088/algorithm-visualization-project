@@ -28,7 +28,7 @@ every bundled file parses and runs without errors.
 | --- | --- |
 | Comment | `// text` or `# text` |
 | Assignment | `x = 5`, `x += 1`, `x -= 1` |
-| Array literal | `a = arr[3, 1, 2]` |
+| Array literal | `a = arr[3, 1, 2]`, empty: `a = arr[]` |
 | Range array | `a = arr[1 to 10]` |
 | Sized array | `a = arr(5)` or `a = arr(5, 0)` (size, default value) |
 | Index | `a[i]`, `a[i] = v` (indices are floored) |

@@ -35,7 +35,7 @@ end fun
 result = Bubble_Sort(a1)
 
 Syntax rules. Anything else is a syntax error:
-- Create arrays only on the right side of an assignment: a = arr[3, 1, 2], a = arr[1 to 10] or a = arr(n, 0). "arr" is a keyword and cannot be a variable name. Never write a bare [3, 1, 2] list, never pass or return an array literal (assign it first: pair = arr[i, j], then return pair), and never slice: a[i:j] does not exist.
+- Create arrays only on the right side of an assignment: a = arr[3, 1, 2], a = arr[1 to 10], a = arr(n, 0) or the empty a = arr[]. "arr" is a keyword and cannot be a variable name. Never write a bare [3, 1, 2] list, never pass or return an array literal (assign it first: pair = arr[i, j], then return pair), and never slice: a[i:j] does not exist.
 - Blocks: "if (c):" / "else if (c):" / "else:" / "end if"; "while (c):" ... "end while"; "for (i = 0; i < n; i += 1):" ... "end for"; "for x in a:" ... "end for"; "fun Name(params):" ... "end fun". Do-while loops are written as "do:", then the body, then "while (condition)", with no "end" keyword.
 - Operators: + - * / % ** == != < > <= >= and or. There is no "not", "++", "*=" or "/=": only =, += and -=. "/" is real division, so use floor(a / b) for an index.
 - The only built-in functions are length(a), size(a), floor(x) and swap(a[i], a[j]). There is no print, len, min, max, append or range: write your own fun if you need one.
