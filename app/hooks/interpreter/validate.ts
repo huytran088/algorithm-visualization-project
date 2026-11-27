@@ -81,18 +81,32 @@ export function misplacedArrayLiterals(line: string) {
   return found;
 }
 
+/** A problem found in pseudocode, with its position when known. */
+export type SourceProblem = {
+  // syntax: won't parse; runtime: fails or logs an error when run;
+  // hint: runs, but likely not what was meant (nothing runs, no table)
+  kind: 'syntax' | 'runtime' | 'hint'
+  // 1-based line, and 0-based column, as ANTLR reports them
+  line: number | undefined
+  column: number | undefined
+  message: string
+};
+
 /**
  * Explains the directive and array-literal mistakes the parser only reports
  * as "no viable alternative", so a reader (or the AI Tutor's repair request)
  * can fix them.
  */
 function directiveProblems(source: string) {
-  const problems: string[] = [];
+  const problems: SourceProblem[] = [];
+  const add = (line: number, message: string) =>
+    problems.push({ kind: 'syntax', line, column: undefined, message });
+
   source.split(/\r?\n/).forEach((text, index) => {
     const line = index + 1;
     for (const literal of misplacedArrayLiterals(text)) {
-      problems.push(
-        `Line ${line}: an array literal (${literal.text}) can only be used ` +
+      add(line,
+        `an array literal (${literal.text}) can only be used ` +
         'right after = in an assignment. Assign it to a variable on the ' +
         'line before, then use the variable.',
       );
@@ -103,16 +117,16 @@ function directiveProblems(source: string) {
 
     for (const { name, args } of directives) {
       if (!Directives.has(name)) {
-        problems.push(
-          `Line ${line}: @${name} is not a directive. Use only @init, ` +
+        add(line,
+          `@${name} is not a directive. Use only @init, ` +
           '@mark, @log, @insert, @delete, @update, @swap and @sort.',
         );
         continue;
       }
       for (const arg of args) {
         if (arg && !PlainArg.test(arg)) {
-          problems.push(
-            `Line ${line}: directive argument "${arg}" is an expression. ` +
+          add(line,
+            `directive argument "${arg}" is an expression. ` +
             'Arguments must be a single variable name, number or "string": ' +
             'assign the value to a variable on the line before ' +
             `(e.g. k = ${arg}) and use @${name}<k, ...>.`,
@@ -122,8 +136,8 @@ function directiveProblems(source: string) {
     }
     // A directive may also decorate a parameter: fun F(@init<table> a)
     if (!rest) {
-      problems.push(
-        `Line ${line}: a directive cannot be on a line by itself. Put it at ` +
+      add(line,
+        'a directive cannot be on a line by itself. Put it at ' +
         'the start of the statement it marks, on the same line.',
       );
     }
@@ -133,17 +147,19 @@ function directiveProblems(source: string) {
 
 /**
  * Checks pseudocode the way the visualizer will run it, and returns the
- * problems found (empty when the code is fine). Used to vet AI Tutor output.
+ * problems found (empty when the code is fine, or blank).
  *
  * Reports syntax errors (with line and column, plus plain explanations of
- * directive mistakes), runtime exceptions, errors
- * the interpreter logs, a program with no top-level call, and arrays that are
- * never visualized.
+ * directive and array-literal mistakes), runtime exceptions, errors the
+ * interpreter logs (on the line that ran), and as hints a program with no
+ * top-level call or arrays that are never visualized.
  *
  * @param source The pseudocode to check
  */
-export default function validateSource(source: string): string[] {
-  const syntax: string[] = [];
+export function checkSource(source: string): SourceProblem[] {
+  if (!source.replace(/(\/\/|#).*$/gm, '').trim()) return [];
+
+  const syntax: SourceProblem[] = [];
   const listener = {
     syntaxError: (
       _recognizer: unknown,
@@ -152,7 +168,7 @@ export default function validateSource(source: string): string[] {
       column: number,
       message: string,
     ) => {
-      syntax.push(`Line ${line}:${column}: ${message}`);
+      syntax.push({ kind: 'syntax', line, column, message });
     },
     reportAmbiguity: () => {},
     reportAttemptingFullContext: () => {},
@@ -167,40 +183,69 @@ export default function validateSource(source: string): string[] {
   parser.addErrorListener(listener);
   const tree = parser.program();
 
-  const hints = directiveProblems(source);
-  if (syntax.length > 0) return [...hints, ...syntax];
+  const explained = directiveProblems(source);
+  if (syntax.length > 0) return [...explained, ...syntax];
 
   const visitor = new TraceInterpreterVisitor();
   try {
     visitor.visit(tree);
   } catch (err) {
-    return [
-      ...hints,
-      `Runtime error: ${err instanceof Error ? err.message : String(err)}`,
-    ];
+    return [...explained, {
+      kind: 'runtime',
+      line: undefined,
+      column: undefined,
+      message: `Runtime error: ${err instanceof Error ? err.message : String(err)}`,
+    }];
   }
 
-  const actions = visitor.steps.flatMap(step => step.actions);
-  const problems = [...hints, ...new Set(
-    actions
-      .filter(a => a.cmd === 'vis_log' && a.params.level === 'error')
-      .map(a => String(a.params.text)),
-  )];
+  const problems = [...explained];
+  const seen = new Set<string>();
+  for (const step of visitor.steps) {
+    for (const a of step.actions) {
+      if (a.cmd !== 'vis_log' || a.params.level !== 'error') continue;
+      const message = String(a.params.text);
+      if (seen.has(message)) continue;
+      seen.add(message);
+      const line = Array.isArray(step.line) ? step.line[0] : step.line;
+      // "x resulted in undefined" just echoes an error already on this line
+      if (message.startsWith('Evaluation Error:') &&
+        problems.some(p => p.kind === 'runtime' && p.line === line)) continue;
+      problems.push({ kind: 'runtime', line, column: undefined, message });
+    }
+  }
+
+  const hint = (message: string) => problems.push(
+    { kind: 'hint', line: undefined, column: undefined, message },
+  );
 
   // Function declarations are the only steps with a [start, end] line range
   if (visitor.steps.every(step => Array.isArray(step.line))) {
-    problems.push(
-      'The program does nothing: add a top-level call such as result = Name(a1).',
-    );
+    hint('The program does nothing: add a top-level call such as result = Name(a1).');
   }
 
+  const actions = visitor.steps.flatMap(step => step.actions);
   const usesArrays = /\barr\s*[[(]/.test(source);
   if (usesArrays && !actions.some(a => a.cmd === 'vis_init')) {
-    problems.push(
+    hint(
       'No array is visualized: put @init<table> on the array parameter of ' +
       'the first function called.',
     );
   }
 
   return problems;
+}
+
+/**
+ * checkSource as plain strings ("Line 4:41: ..." / "Line 5: ..." / message),
+ * the form sent back to the model by the AI Tutor's repair request.
+ *
+ * @param source The pseudocode to check
+ */
+export default function validateSource(source: string): string[] {
+  return checkSource(source).map((p) => {
+    if (p.kind !== 'syntax' || p.line === undefined) return p.message;
+    return p.column === undefined ?
+      `Line ${p.line}: ${p.message}` :
+      `Line ${p.line}:${p.column}: ${p.message}`;
+  });
 }

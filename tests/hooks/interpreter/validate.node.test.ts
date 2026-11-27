@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import validateSource from '../../../app/hooks/interpreter/validate';
+import validateSource, { checkSource } from '../../../app/hooks/interpreter/validate';
 
 const codeDir = join(import.meta.dirname, '../../../public/code');
 const samples = readdirSync(codeDir).filter(f => f.endsWith('.avp'));
@@ -131,5 +131,58 @@ end fun
 
 result = Gcd(48, 18)
 `)).toEqual([]);
+  });
+});
+
+describe('checkSource', () => {
+  it('locates syntax errors by line and column', () => {
+    const problems = checkSource(`a1 = arr[3, 1, 2]
+x = (1 +
+`);
+    expect(problems.length).toBeGreaterThan(0);
+    expect(problems[0]).toMatchObject({ kind: 'syntax', line: 2 });
+    expect(problems[0].column).toBeGreaterThanOrEqual(0);
+  });
+
+  it('gives explanations the line they are about', () => {
+    const problems = checkSource(`fun Run(@init<table> array):
+    return array
+end fun
+
+result = Run(arr[3, 1, 2])
+`);
+    expect(problems[0]).toMatchObject({ kind: 'syntax', line: 5, column: undefined });
+    expect(problems[0].message).toMatch(/^an array literal/);
+  });
+
+  it('locates interpreter errors on the line that ran', () => {
+    const problems = checkSource(`a1 = arr[3, 1, 2]
+m = max(a1)
+`);
+    expect(problems).toContainEqual({
+      kind: 'runtime',
+      line: 2,
+      column: undefined,
+      message: expect.stringContaining('Unknown function \'max\''),
+    });
+  });
+
+  it('drops the undefined follow-on of an error on the same line', () => {
+    const problems = checkSource(`a1 = arr[3, 1, 2]
+m = max(a1)
+`).filter(p => p.kind === 'runtime');
+    expect(problems).toHaveLength(1);
+    expect(problems[0].message).toContain('Unknown function \'max\'');
+  });
+
+  it('marks missing calls and visuals as hints', () => {
+    expect(checkSource(`a1 = arr[3, 1, 2]
+x = a1[0]
+`)).toEqual([expect.objectContaining({ kind: 'hint' })]);
+  });
+
+  it('reports nothing for blank code', () => {
+    expect(checkSource('')).toEqual([]);
+    expect(checkSource('  \n// just a comment\n')).toEqual([]);
   });
 });
